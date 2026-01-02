@@ -1,0 +1,12 @@
+# .NET
+bin/
+obj/
+
+# Secrets
+appsettings.Development.json
+
+# Node / frontend (si jamais)
+node_modules/
+
+# OS
+.DS_Store
