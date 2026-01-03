@@ -1,13 +1,25 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Shop</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Produits</h1>
+    <h1>Products</h1>
+
+    <!-- Champ de recherche -->
+    <input type="text" id="searchInput" placeholder="Search products..." />
+
+    <!-- Liste des produits -->
     <ul id="products"></ul>
+
+    <!-- Pagination -->
+    <div id="pagination">
+        <button id="prevBtn">Previous</button>
+        <span id="pageInfo"></span>
+        <button id="nextBtn">Next</button>
+    </div>
 
     <script src="app.js"></script>
 </body>

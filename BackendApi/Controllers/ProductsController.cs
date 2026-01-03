@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using BackendApi.Models;
 using System.Collections.Generic;
+using System;
 
 namespace BackendApi.Controllers;
 
@@ -19,26 +20,42 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public List<Product> Get()
+    public IActionResult Get([FromQuery] int page = 1, [FromQuery] string search = "")
     {
-        var products = new List<Product>();
-
-        using var conn = new MySqlConnection(_connectionString);
-        conn.Open();
-
-        var cmd = new MySqlCommand("SELECT * FROM products", conn);
-        using var reader = cmd.ExecuteReader();
-
-        while (reader.Read())
+        try
         {
-            products.Add(new Product
-            {
-                Id = reader.GetInt32("id"),
-                Name = reader.GetString("name"),
-                Price = reader.GetDecimal("price")
-            });
-        }
+            var products = new List<Product>();
+            int pageSize = 12;
+            int offset = (page - 1) * pageSize;
 
-        return products;
+            using var conn = new MySqlConnection(_connectionString);
+            conn.Open();
+
+            var cmd = new MySqlCommand(
+                "SELECT * FROM products WHERE name LIKE @search ORDER BY id LIMIT @limit OFFSET @offset", conn
+            );
+            cmd.Parameters.AddWithValue("@search", "%" + search + "%");
+            cmd.Parameters.AddWithValue("@limit", pageSize);
+            cmd.Parameters.AddWithValue("@offset", offset);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                products.Add(new Product
+                {
+                    Id = reader.GetInt32("id"),
+                    Name = reader.GetString("name"),
+                    Price = reader.GetDecimal("price")
+                });
+            }
+
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return StatusCode(500, "An internal server error occurred.");
+        }
     }
+
 }
