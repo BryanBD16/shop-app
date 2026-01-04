@@ -3,29 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>Shop</title>
-    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="header"></div>
-    <h1>Products</h1>
 
-    <!-- Search field -->
-    <input type="text" id="searchInput" placeholder="Search products..." />
+    <main class="main-content">
+        <h1>Products</h1>
 
-    <!-- Products list -->
-    <ul id="products"></ul>
+        <!-- Search field -->
+        <input type="text" id="searchInput" placeholder="Search products..." />
 
-    <!-- Pagination -->
-    <div id="pagination">
-        <button id="prevBtn">Previous</button>
-        <span id="pageInfo"></span>
-        <button id="nextBtn">Next</button>
-    </div>
+        <!-- Products list -->
+        <ul id="products"></ul>
+
+        <!-- Pagination -->
+        <div id="pagination">
+            <button class="btn-white-green" id="prevBtn">Previous</button>
+            <span id="pageInfo"></span>
+            <button class="btn-white-green" id="nextBtn">Next</button>
+        </div>
+    </main>
 
     <div id="footer"></div>
 
     <!-- Scripts -->
     <script src="js/layout.js"></script>
     <script src="js/products.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  </body>
 </body>
 </html>
