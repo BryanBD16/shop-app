@@ -30,7 +30,7 @@ function fetchProducts() {
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">${p.name}</h5>
                                 <p class="card-text">$${p.price.toFixed(2)}</p>
-                                <button class="btn btn-green mt-auto">
+                                <button class="btn btn-orange mt-auto">
                                     Add to Cart
                                 </button>
                             </div>

@@ -25,21 +25,23 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
 }
 
-.btn-green {
+.btn-orange {
   background-color: #D14517;
-  color: #E6E2D3;
-  border: none;
+  color: #ffffff;
+  border: 2px solid #D14517;
   padding: 0.8rem 1.5rem;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
 }
-.btn-green:hover {
+.btn-orange:hover {
+  border: 2px solid #D14517;
+  border-radius: 5px;
   background-color: #ffffff;
   color: #D14517;
 }
 
-.btn-white-green {
+.btn-white {
   background-color: #ffffff;
   color: #D14517;
   border: 2px solid #D14517;
@@ -48,9 +50,11 @@ h1, h2, h3, h4, h5, h6 {
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
 }
-.btn-white-green:hover {
+.btn-white:hover {
   background-color: #D14517;
   color: #ffffff;
+  border: 2px solid #D14517;
+  border-radius: 5px;
 }
 
 .container {
@@ -89,7 +93,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #E6E2D3;
 }
 .custom-navbar .nav-link:hover {
-  background-color: #ffffff;
+  background-color: #E6E2D3;
   color: #D14517;
 }
 
