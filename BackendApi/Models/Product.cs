@@ -10,5 +10,7 @@ public class Product
 
         public string ImagePath { get; set; } = "";
 
+        public string Description { get; set; } = "";
+
         public bool IsPublished { get; set; } = true;
     }

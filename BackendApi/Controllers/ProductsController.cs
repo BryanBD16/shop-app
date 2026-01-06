@@ -82,4 +82,43 @@ public class ProductsController : ControllerBase
             return StatusCode(500, "An internal server error occurred.");
         }
     }
+
+        [HttpGet("{id}")]
+    public IActionResult GetById(int id)
+    {
+        try
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            conn.Open();
+
+            var cmd = new MySqlCommand(
+                @"SELECT id, name, price, image_path, description
+                FROM products
+                WHERE id = @id AND is_published = 1",
+                conn
+            );
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read())
+                return NotFound();
+
+            var product = new ProductDetailsDto
+            {
+                Id = reader.GetInt32("id"),
+                Name = reader.GetString("name"),
+                Price = reader.GetDecimal("price"),
+                ImagePath = reader.GetString("image_path"),
+                Description = reader.GetString("description")
+            };
+
+            return Ok(product);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, "An internal server error occurred.");
+        }
+    }
+
 }
