@@ -3,7 +3,7 @@ const pageSize = 12;
 let currentSearch = "";
 
 // DOM elements
-const ul = document.getElementById('products');
+const productsDiv = document.getElementById('products');
 const searchInput = document.getElementById('searchInput');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -13,21 +13,41 @@ function fetchProducts() {
     fetch(`http://localhost:5000/api/products?page=${currentPage}&search=${encodeURIComponent(currentSearch)}`)
         .then(res => res.json())
         .then(data => {
-            ul.innerHTML = ''; // vider la liste avant d'ajouter
-            data.forEach(p => {
-                const li = document.createElement('li');
-                li.textContent = `${p.name} - ${p.price}$`;
-                ul.appendChild(li);
+            productsDiv.innerHTML = '';
+
+            data.items.forEach(p => {
+                const col = document.createElement('div');
+                col.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
+
+                col.innerHTML = `
+                    <div class="card">
+                        <img 
+                            src="http://localhost:5000${p.imagePath}" 
+                            class="card-img-top" 
+                            alt="${p.name}" 
+                        />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">${p.name}</h5>
+                            <p class="card-text">$${p.price.toFixed(2)}</p>
+                            <button class="btn btn-green mt-auto">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                productsDiv.appendChild(col);
             });
 
-            pageInfo.textContent = `Page ${currentPage}`;
-            prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = data.length < pageSize; // s'il y a moins que pageSize, fin
+            // Pagination UI
+            pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
+            prevBtn.disabled = data.currentPage === 1;
+            nextBtn.disabled = data.currentPage >= data.totalPages;
         })
         .catch(err => console.error(err));
 }
 
-// Gestion des boutons
+// Previous
 prevBtn.addEventListener('click', () => {
     if (currentPage > 1) {
         currentPage--;
@@ -35,15 +55,16 @@ prevBtn.addEventListener('click', () => {
     }
 });
 
+// Next
 nextBtn.addEventListener('click', () => {
     currentPage++;
     fetchProducts();
 });
 
-// Recherche
+// Search
 searchInput.addEventListener('input', () => {
     currentSearch = searchInput.value.trim();
-    currentPage = 1; // reset page
+    currentPage = 1;
     fetchProducts();
 });
 

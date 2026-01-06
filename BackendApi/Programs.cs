@@ -15,6 +15,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Serve static files from wwwroot
+app.UseStaticFiles();  
+
 app.UseCors();
 app.MapControllers();
 
