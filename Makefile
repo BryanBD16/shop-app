@@ -32,7 +32,7 @@ backend:
 # Full dev environment
 # ============================
 
-dev:
+dev: db-start
 	@echo "Starting full development environment"
 	make -j2 sass backend
 
