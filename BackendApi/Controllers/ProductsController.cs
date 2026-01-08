@@ -83,7 +83,7 @@ public class ProductsController : ControllerBase
         }
     }
 
-        [HttpGet("{id}")]
+    [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
         try
@@ -120,5 +120,117 @@ public class ProductsController : ControllerBase
             return StatusCode(500, "An internal server error occurred.");
         }
     }
+    // ==========================================
+    // ADMIN ENDPOINTS
+    // ==========================================
+
+    // [Authorize(Roles = "Admin")]
+    [HttpGet("/api/admin/products")]
+    public IActionResult GetAdminProducts([FromQuery] int page = 1, [FromQuery] string search = "")
+    {
+        try
+        {
+            var items = new List<AdminProductListItemDto>();
+            int offset = (page - 1) * PageSize;
+            int totalItems;
+
+            using var conn = new MySqlConnection(_connectionString);
+            conn.Open();
+
+            // Count total products (admin sees all)
+            using (var countCmd = new MySqlCommand(
+                "SELECT COUNT(*) FROM products WHERE name LIKE @search",
+                conn))
+            {
+                countCmd.Parameters.AddWithValue("@search", $"%{search}%");
+                totalItems = Convert.ToInt32(countCmd.ExecuteScalar());
+            }
+
+            // Get paged products
+            using (var cmd = new MySqlCommand(
+                @"SELECT id, name, price, image_path, stock_quantity, is_published
+                FROM products
+                WHERE name LIKE @search
+                ORDER BY id
+                LIMIT @limit OFFSET @offset",
+                conn))
+            {
+                cmd.Parameters.AddWithValue("@search", $"%{search}%");
+                cmd.Parameters.AddWithValue("@limit", PageSize);
+                cmd.Parameters.AddWithValue("@offset", offset);
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    items.Add(new AdminProductListItemDto
+                    {
+                        Id = reader.GetInt32("id"),
+                        Name = reader.GetString("name"),
+                        Price = reader.GetDecimal("price"),
+                        ImagePath = reader.GetString("image_path"),
+                        StockQuantity = reader.GetInt32("stock_quantity"),
+                        IsPublished = reader.GetBoolean("is_published")
+                    });
+                }
+            }
+
+            var result = new PagedResultDto<AdminProductListItemDto>
+            {
+                Items = items,
+                CurrentPage = page,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)PageSize)
+            };
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, "An internal server error occurred.");
+        }
+    }
+
+    // [Authorize(Roles = "Admin")]
+    [HttpGet("/api/admin/products/{id}")]
+    public IActionResult GetAdminProductById(int id)
+    {
+        try
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            conn.Open();
+
+            var cmd = new MySqlCommand(
+                @"SELECT id, name, price, image_path, description, stock_quantity, is_published
+                FROM products
+                WHERE id = @id",
+                conn
+            );
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read())
+                return NotFound();
+
+            var product = new AdminProductDetailsDto
+            {
+                Id = reader.GetInt32("id"),
+                Name = reader.GetString("name"),
+                Price = reader.GetDecimal("price"),
+                ImagePath = reader.GetString("image_path"),
+                Description = reader.GetString("description"),
+                StockQuantity = reader.GetInt32("stock_quantity"),
+                IsPublished = reader.GetBoolean("is_published")
+            };
+
+            return Ok(product);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, "An internal server error occurred.");
+        }
+    }
+
 
 }

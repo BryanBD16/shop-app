@@ -88,8 +88,20 @@ h1, h2, h3, h4, h5, h6 {
   color: #E6E2D3;
 }
 .custom-navbar .nav-link:hover {
-  background-color: #E6E2D3;
-  color: #D14517;
+  color: #E6E2D3;
+  background-color: #D14517;
+}
+
+.dropdown-menu {
+  background-color: #1f2010;
+}
+
+.dropdown-item {
+  color: #ffffff;
+}
+.dropdown-item:hover {
+  background-color: #D14517;
+  color: #E6E2D3;
 }
 
 html, body {
@@ -125,6 +137,19 @@ footer a:hover {
 footer p {
   margin: 0.5rem 0 0 0;
   font-size: 0.9rem;
+}
+
+/* Base banner */
+.app-banner {
+  width: 100%;
+  padding: 0.75rem 0;
+  font-size: 0.9rem;
+  text-align: center;
+  border-bottom: 1px solid transparent;
+  background-color: #E8744E;
+  color: #ffffff;
+  margin-top: -2rem;
+  margin-bottom: 2rem;
 }
 
 /*# sourceMappingURL=style.css.map */
