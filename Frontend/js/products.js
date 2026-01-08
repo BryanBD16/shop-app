@@ -20,22 +20,24 @@ function fetchProducts() {
                 col.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
 
                 col.innerHTML = `
-                    <a href="product-detail.html?id=${p.id}" class="text-decoration-none text-dark">
-                        <div class="card">
+                    <div class="card">
+                        <a href="product-detail.html?id=${p.id}" class="text-decoration-none text-dark">
                             <img 
                                 src="http://localhost:5000${p.imagePath}" 
                                 class="card-img-top" 
                                 alt="${p.name}" 
                             />
+                        </a>
                             <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">${p.name}</h5>
-                                <p class="card-text">$${p.price.toFixed(2)}</p>
+                                <a href="product-detail.html?id=${p.id}" class="text-decoration-none text-dark">
+                                    <h5 class="card-title">${p.name}</h5>
+                                    <p class="card-text">$${p.price.toFixed(2)}</p>
+                                </a>
                                 <button class="btn btn-orange mt-auto">
                                     Add to Cart
                                 </button>
                             </div>
-                        </div>
-                    </a>
+                    </div>
                 `;
 
                 productsDiv.appendChild(col);

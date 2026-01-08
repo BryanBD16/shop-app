@@ -17,10 +17,10 @@ CREATE TABLE products (
 -- (ex: backend/ShopApi/wwwroot/images/products/placeholder.jpg)
 
 INSERT INTO products (name, price, image_path, description, stock_quantity, is_published) VALUES
-('Keyboard', 49.99, '/images/products/placeholder.jpg', 'A standard mechanical keyboard for everyday use.', 45, true),
+('Keyboard', 49.99, '/images/products/keyboard.jpg', 'A standard mechanical keyboard for everyday use.', 45, true),
 ('Mouse', 19.99, '/images/products/mouse.jpg', 'Ergonomic mouse with adjustable DPI.', 80, true),
-('Monitor 24"', 129.99, '/images/products/placeholder.jpg', '24-inch Full HD monitor with vibrant colors.', 20, true),
-('Monitor 27"', 179.99, '/images/products/placeholder.jpg', '27-inch monitor ideal for gaming and productivity.', 15, true),
+('Monitor 24"', 129.99, '/images/products/monitor24.jpg', '24-inch Full HD monitor with vibrant colors.', 20, true),
+('Monitor 27"', 179.99, '/images/products/monitor27.jpg', '27-inch monitor ideal for gaming and productivity.', 15, true),
 ('USB Cable', 9.99, '/images/products/placeholder.jpg', 'Durable USB cable for charging and data transfer.', 200, true),
 ('HDMI Cable', 14.99, '/images/products/placeholder.jpg', 'High-speed HDMI cable for HD video and audio.', 150, true),
 ('Laptop Stand', 29.99, '/images/products/placeholder.jpg', 'Adjustable laptop stand for ergonomic setup.', 60, true),
