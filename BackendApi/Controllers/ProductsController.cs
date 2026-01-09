@@ -4,6 +4,9 @@ using MySql.Data.MySqlClient;
 using BackendApi.DTOs;
 using System;
 using System.Collections.Generic;
+using BackendApi.Dtos.Admin;
+using System.IO;
+using System.Linq;
 
 namespace BackendApi.Controllers;
 
@@ -229,6 +232,84 @@ public class ProductsController : ControllerBase
         {
             Console.WriteLine(ex);
             return StatusCode(500, "An internal server error occurred.");
+        }
+    }
+
+    // [Authorize(Roles = "Admin")]
+    [HttpPut("/api/admin/products/{id}")]
+    public IActionResult UpdateAdminProduct(int id, [FromBody] AdminProductUpdateDto dto)
+    {
+        try
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            conn.Open();
+
+            // Vérifier si le produit existe
+            using (var checkCmd = new MySqlCommand(
+                "SELECT COUNT(*) FROM products WHERE id = @id",
+                conn))
+            {
+                checkCmd.Parameters.AddWithValue("@id", id);
+                var exists = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+
+                if (!exists)
+                    return NotFound();
+            }
+
+            // Update du produit
+            using var cmd = new MySqlCommand(
+                @"UPDATE products
+                SET
+                    name = @name,
+                    price = @price,
+                    image_path = @imagePath,
+                    description = @description,
+                    stock_quantity = @stockQuantity,
+                    is_published = @isPublished
+                WHERE id = @id",
+                conn
+            );
+
+            cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@name", dto.Name);
+            cmd.Parameters.AddWithValue("@price", dto.Price);
+            cmd.Parameters.AddWithValue("@imagePath", dto.ImagePath);
+            cmd.Parameters.AddWithValue("@description", dto.Description);
+            cmd.Parameters.AddWithValue("@stockQuantity", dto.StockQuantity);
+            cmd.Parameters.AddWithValue("@isPublished", dto.IsPublished);
+
+            cmd.ExecuteNonQuery();
+
+            return NoContent(); // 204 → standard REST pour update réussi
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, "An internal server error occurred.");
+        }
+    }
+
+    // [Authorize(Roles = "Admin")]
+    [HttpGet("/api/admin/product-images")]
+    public IActionResult GetProductImages()
+    {
+        try
+        {
+            var imageDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+
+            if (!Directory.Exists(imageDir))
+                return Ok(new List<string>());
+
+            var images = Directory.GetFiles(imageDir)
+                .Select(f => "/images/products/" + Path.GetFileName(f))
+                .ToList();
+
+            return Ok(images);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, "Failed to load images");
         }
     }
 

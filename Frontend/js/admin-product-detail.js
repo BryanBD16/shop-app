@@ -1,4 +1,3 @@
-// Récupérer l'id du produit depuis l'URL
 const params = new URLSearchParams(window.location.search);
 const productId = params.get('id');
 
@@ -30,7 +29,6 @@ if (!productId) {
         });
 }
 
-// Pour l'instant, le bouton et la quantité ne font rien
 editBtn.addEventListener('click', () => {
-    alert('Edit functionality to be implemented.');
+    location.href=`admin-product-edit.html?id=${productId}`;
 });

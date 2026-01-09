@@ -76,6 +76,19 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
 }
 
+.image-thumb {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 6px;
+}
+
+.image-thumb.selected {
+  border-color: #E8744E;
+}
+
 .site-header {
   margin-bottom: 2rem;
 }

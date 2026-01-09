@@ -35,7 +35,7 @@ function fetchProducts() {
                                     <p class="card-text">$${p.price.toFixed(2)}</p>
                                     <p class="card-text">Stock: ${p.stockQuantity}</p>
                                 </a>
-                                <button class="btn btn-orange mt-auto">
+                                <button class="btn btn-orange mt-auto" onclick="location.href='admin-product-edit.html?id=${p.id}'">
                                     Edit
                                 </button>
                             </div>
