@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header"></div>
+
+    <div class="app-banner">
+        <div class="container">
+            <strong>Admin mode</strong> — You are currently managing the store
+        </div>
+    </div>
+
+    <main class="main-content my-5">
+        <div id="product-detail" class="row justify-content-center">
+            <div class="col-12 col-md-6">
+                <h1 class="text-center mb-4">Create Product</h1>
+
+                <form id="createProductForm">
+                    <div class="mb-3">
+                        <label class="form-label">Product name</label>
+                        <input id="productName" type="text" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input id="productPrice" type="number" step="0.01" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Product image</label>
+
+                        <!-- Image preview -->
+                        <div class="text-center mb-2">
+                            <img
+                                id="productImagePreview"
+                                class="img-fluid rounded"
+                                style="max-height: 200px;"
+                                alt="Product image preview"
+                            >
+                        </div>
+
+                        <!-- Image gallery -->
+                        <div id="imageGallery" class="d-flex flex-wrap gap-2 mb-2"></div>
+
+                        <!-- Selected image path -->
+                        <input type="hidden" id="productImagePath">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Stock quantity</label>
+                        <input id="productStock" type="number" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Published</label>
+                        <select id="productIsPublished" class="form-select">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Description</label>
+                        <textarea id="productDescription" class="form-control" rows="4"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="submit" class="btn btn-orange">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer"></div>
+
+    <!-- Scripts -->
+    <script src="js/layout.js"></script>
+    <script src="js/admin-product-create.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>

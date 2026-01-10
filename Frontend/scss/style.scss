@@ -5,6 +5,7 @@ $dark-olive: #1f2010;
 $burnt-orange: #D14517;
 $white: #ffffff;
 $soft-orange: #E8744E;
+$red: #dc3545;
 
 $olive-text: #686D38;
 $olive-heading: #686D38;
@@ -127,6 +128,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .image-thumb.selected {
     border-color: $soft-orange;
+}
+
+.image-error {
+    border: 2px solid $red;
+    border-radius: 6px;
 }
 
 

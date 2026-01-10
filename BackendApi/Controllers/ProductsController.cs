@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using BackendApi.Dtos.Admin;
 using System.IO;
 using System.Linq;
+using BackendApi.Dtos;
 
 namespace BackendApi.Controllers;
 
@@ -310,6 +311,92 @@ public class ProductsController : ControllerBase
         {
             Console.WriteLine(ex);
             return StatusCode(500, "Failed to load images");
+        }
+    }
+
+   // [Authorize(Roles = "Admin")]
+    [HttpPost("/api/admin/products")]
+    public IActionResult CreateAdminProduct([FromBody] AdminProductCreateDto dto)
+    {
+        // DTO validation (Data Annotations)
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new
+            {
+                errors = ModelState.ToDictionary(
+                    e => e.Key,
+                    e => e.Value.Errors.First().ErrorMessage
+                )
+            });
+        }
+
+        // Business validation: image required
+        if (string.IsNullOrWhiteSpace(dto.ImagePath))
+        {
+            return BadRequest(new
+            {
+                errors = new
+                {
+                    imagePath = "Product image is required."
+                }
+            });
+        }
+
+        // Business validation: image must exist on server
+        var physicalImagePath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            dto.ImagePath.TrimStart('/')
+        );
+
+        if (!System.IO.File.Exists(physicalImagePath))
+        {
+            return BadRequest(new
+            {
+                errors = new
+                {
+                    imagePath = "Selected product image does not exist."
+                }
+            });
+        }
+
+        // Database insert
+        try
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = new MySqlCommand(
+                @"INSERT INTO products
+                    (name, price, image_path, description, stock_quantity, is_published)
+                VALUES
+                    (@name, @price, @imagePath, @description, @stockQuantity, @isPublished);
+                SELECT LAST_INSERT_ID();",
+                conn
+            );
+
+            cmd.Parameters.AddWithValue("@name", dto.Name);
+            cmd.Parameters.AddWithValue("@price", dto.Price);
+            cmd.Parameters.AddWithValue("@imagePath", dto.ImagePath);
+            cmd.Parameters.AddWithValue("@description", dto.Description);
+            cmd.Parameters.AddWithValue("@stockQuantity", dto.StockQuantity);
+            cmd.Parameters.AddWithValue("@isPublished", dto.IsPublished);
+
+            var newProductId = Convert.ToInt32(cmd.ExecuteScalar());
+
+            return CreatedAtAction(
+                nameof(GetAdminProductById),
+                new { id = newProductId },
+                new { id = newProductId }
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, new
+            {
+                message = "An internal server error occurred."
+            });
         }
     }
 
