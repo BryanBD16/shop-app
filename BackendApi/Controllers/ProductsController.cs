@@ -400,5 +400,47 @@ public class ProductsController : ControllerBase
         }
     }
 
+    // [Authorize(Roles = "Admin")]
+    [HttpDelete("/api/admin/products/{id}")]
+    public IActionResult DeleteAdminProduct(int id)
+    {
+        try
+        {
+            using var conn = new MySqlConnection(_connectionString);
+            conn.Open();
+
+            // Check if product exists
+            using (var checkCmd = new MySqlCommand(
+                "SELECT COUNT(*) FROM products WHERE id = @id",
+                conn))
+            {
+                checkCmd.Parameters.AddWithValue("@id", id);
+
+                var exists = Convert.ToInt32(checkCmd.ExecuteScalar());
+                if (exists == 0)
+                    return NotFound(new { message = "Product not found." });
+            }
+
+            // Delete product
+            using var deleteCmd = new MySqlCommand(
+                "DELETE FROM products WHERE id = @id",
+                conn
+            );
+            deleteCmd.Parameters.AddWithValue("@id", id);
+
+            deleteCmd.ExecuteNonQuery();
+
+            return NoContent(); // 204
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, new
+            {
+                message = "An internal server error occurred."
+            });
+        }
+    }
+
 
 }

@@ -21,7 +21,7 @@ INSERT INTO products (name, price, image_path, description, stock_quantity, is_p
 ('Mouse', 19.99, '/images/products/mouse.jpg', 'Ergonomic mouse with adjustable DPI.', 80, true),
 ('Monitor 24"', 129.99, '/images/products/monitor24.jpg', '24-inch Full HD monitor with vibrant colors.', 20, true),
 ('Monitor 27"', 179.99, '/images/products/monitor27.jpg', '27-inch monitor ideal for gaming and productivity.', 15, true),
-('USB Cable', 9.99, '/images/products/placeholder.jpg', 'Durable USB cable for charging and data transfer.', 200, true),
+('USB Cable', 9.99, '/images/products/usbCable.jpg', 'Durable USB cable for charging and data transfer.', 200, true),
 ('HDMI Cable', 14.99, '/images/products/placeholder.jpg', 'High-speed HDMI cable for HD video and audio.', 150, true),
 ('Laptop Stand', 29.99, '/images/products/placeholder.jpg', 'Adjustable laptop stand for ergonomic setup.', 60, true),
 ('Webcam', 59.99, '/images/products/placeholder.jpg', 'HD webcam perfect for video calls and streaming.', 35, true),
