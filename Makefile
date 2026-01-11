@@ -9,7 +9,7 @@ BACKEND_DIR=BackendApi
 # Phony targets
 # ============================
 
-.PHONY: sass backend dev db-init db-start db-stop
+.PHONY: sass backend dev db-drop db-start db-stop migrate
 
 
 # ============================
@@ -37,25 +37,49 @@ dev: db-start
 	make -j2 sass backend
 
 # ============================
+# MySQL + Entity Framework Core
+# ============================
+
+# Nom du projet backend (le .csproj)
+PROJECT=BackendApi.csproj
+
+# ============================
 # MySQL control
 # ============================
 
-DB_SCHEMA_FILE=database/schema.sql
-
-# Initialize the database
-db-init: db-start
-	@echo "Initializing database..."
-	mysql -u root -p < $(DB_SCHEMA_FILE)
-
 # Start MySQL service
 db-start:
-	@echo "Starting MySQL service if not already running..."
+	@echo "Starting MySQL service..."
 	sudo service mysql start
 
 # Stop MySQL service
 db-stop:
 	@echo "Stopping MySQL service..."
 	sudo service mysql stop
+
+# ============================
+# Entity Framework Core commands
+# ============================
+
+# Apply all migrations to the database
+migrate:
+	@echo "Applying EF Core migrations..."
+	dotnet ef database update --project $(PROJECT)
+
+# Drop the database
+db-drop:
+	@echo "Dropping the database..."
+	dotnet ef database drop --project $(PROJECT) --force
+
+# ============================
+# Notes
+# ============================
+
+# To add a new migration:
+#   dotnet ef migrations add <MigrationName> --project $(PROJECT)
+# Example:
+#   dotnet ef migrations add InitialCreate --project $(PROJECT)
+
 
 
 

@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
+using Microsoft.EntityFrameworkCore;
 using BackendApi.DTOs;
-using System;
-using System.Collections.Generic;
 using BackendApi.Dtos.Admin;
-using System.IO;
 using System.Linq;
-using BackendApi.Dtos;
+using BackendApi.Data;
+using System.Threading.Tasks;
+using System;
+using System.IO;
+using BackendApi.Models;
+using System.Collections.Generic;
 
 namespace BackendApi.Controllers;
 
@@ -15,60 +16,39 @@ namespace BackendApi.Controllers;
 [Route("api/products")]
 public class ProductsController : ControllerBase
 {
-    private readonly string _connectionString;
+    private readonly AppDbContext _context;
     private const int PageSize = 12;
 
-    public ProductsController(IConfiguration config)
+    public ProductsController(AppDbContext context)
     {
-        _connectionString = config.GetConnectionString("DefaultConnection");
+        _context = context;
     }
 
+    // ==========================================
+    // PUBLIC ENDPOINTS
+    // ==========================================
     [HttpGet]
-    public IActionResult Get([FromQuery] int page = 1, [FromQuery] string search = "")
+    public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string search = "")
     {
         try
         {
-            var items = new List<ProductListItemDto>();
-            int offset = (page - 1) * PageSize;
-            int totalItems;
+            var query = _context.Products
+                                .Where(p => p.IsPublished && p.Name.Contains(search));
 
-            using var conn = new MySqlConnection(_connectionString);
-            conn.Open();
+            var totalItems = await query.CountAsync();
 
-            // 🔹 Count total products
-            using (var countCmd = new MySqlCommand(
-                "SELECT COUNT(*) FROM products WHERE name LIKE @search AND is_published = 1",
-                conn))
-            {
-                countCmd.Parameters.AddWithValue("@search", $"%{search}%");
-                totalItems = Convert.ToInt32(countCmd.ExecuteScalar());
-            }
-
-            // 🔹 Get paged products
-            using (var cmd = new MySqlCommand(
-                @"SELECT id, name, price, image_path
-                  FROM products
-                  WHERE name LIKE @search AND is_published = 1
-                  ORDER BY id
-                  LIMIT @limit OFFSET @offset",
-                conn))
-            {
-                cmd.Parameters.AddWithValue("@search", $"%{search}%");
-                cmd.Parameters.AddWithValue("@limit", PageSize);
-                cmd.Parameters.AddWithValue("@offset", offset);
-
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+            var items = await query
+                .OrderBy(p => p.Id)
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .Select(p => new ProductListItemDto
                 {
-                    items.Add(new ProductListItemDto
-                    {
-                        Id = reader.GetInt32("id"),
-                        Name = reader.GetString("name"),
-                        Price = reader.GetDecimal("price"),
-                        ImagePath = reader.GetString("image_path")
-                    });
-                }
-            }
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    ImagePath = p.ImagePath
+                })
+                .ToListAsync();
 
             var result = new PagedResultDto<ProductListItemDto>
             {
@@ -88,359 +68,153 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        try
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            conn.Open();
-
-            var cmd = new MySqlCommand(
-                @"SELECT id, name, price, image_path, description
-                FROM products
-                WHERE id = @id AND is_published = 1",
-                conn
-            );
-            cmd.Parameters.AddWithValue("@id", id);
-
-            using var reader = cmd.ExecuteReader();
-            if (!reader.Read())
-                return NotFound();
-
-            var product = new ProductDetailsDto
+        var product = await _context.Products
+            .Where(p => p.IsPublished && p.Id == id)
+            .Select(p => new ProductDetailsDto
             {
-                Id = reader.GetInt32("id"),
-                Name = reader.GetString("name"),
-                Price = reader.GetDecimal("price"),
-                ImagePath = reader.GetString("image_path"),
-                Description = reader.GetString("description")
-            };
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                ImagePath = p.ImagePath,
+                Description = p.Description
+            })
+            .FirstOrDefaultAsync();
 
-            return Ok(product);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, "An internal server error occurred.");
-        }
+        if (product == null)
+            return NotFound();
+
+        return Ok(product);
     }
+
     // ==========================================
     // ADMIN ENDPOINTS
     // ==========================================
-
-    // [Authorize(Roles = "Admin")]
     [HttpGet("/api/admin/products")]
-    public IActionResult GetAdminProducts([FromQuery] int page = 1, [FromQuery] string search = "")
+    public async Task<IActionResult> GetAdminProducts([FromQuery] int page = 1, [FromQuery] string search = "")
     {
-        try
+        var query = _context.Products
+                            .Where(p => p.Name.Contains(search));
+
+        var totalItems = await query.CountAsync();
+
+        var items = await query
+            .OrderBy(p => p.Id)
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .Select(p => new AdminProductListItemDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                ImagePath = p.ImagePath,
+                StockQuantity = p.StockQuantity,
+                IsPublished = p.IsPublished
+            })
+            .ToListAsync();
+
+        var result = new PagedResultDto<AdminProductListItemDto>
         {
-            var items = new List<AdminProductListItemDto>();
-            int offset = (page - 1) * PageSize;
-            int totalItems;
+            Items = items,
+            CurrentPage = page,
+            TotalItems = totalItems,
+            TotalPages = (int)Math.Ceiling(totalItems / (double)PageSize)
+        };
 
-            using var conn = new MySqlConnection(_connectionString);
-            conn.Open();
-
-            // Count total products (admin sees all)
-            using (var countCmd = new MySqlCommand(
-                "SELECT COUNT(*) FROM products WHERE name LIKE @search",
-                conn))
-            {
-                countCmd.Parameters.AddWithValue("@search", $"%{search}%");
-                totalItems = Convert.ToInt32(countCmd.ExecuteScalar());
-            }
-
-            // Get paged products
-            using (var cmd = new MySqlCommand(
-                @"SELECT id, name, price, image_path, stock_quantity, is_published
-                FROM products
-                WHERE name LIKE @search
-                ORDER BY id
-                LIMIT @limit OFFSET @offset",
-                conn))
-            {
-                cmd.Parameters.AddWithValue("@search", $"%{search}%");
-                cmd.Parameters.AddWithValue("@limit", PageSize);
-                cmd.Parameters.AddWithValue("@offset", offset);
-
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    items.Add(new AdminProductListItemDto
-                    {
-                        Id = reader.GetInt32("id"),
-                        Name = reader.GetString("name"),
-                        Price = reader.GetDecimal("price"),
-                        ImagePath = reader.GetString("image_path"),
-                        StockQuantity = reader.GetInt32("stock_quantity"),
-                        IsPublished = reader.GetBoolean("is_published")
-                    });
-                }
-            }
-
-            var result = new PagedResultDto<AdminProductListItemDto>
-            {
-                Items = items,
-                CurrentPage = page,
-                TotalItems = totalItems,
-                TotalPages = (int)Math.Ceiling(totalItems / (double)PageSize)
-            };
-
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, "An internal server error occurred.");
-        }
+        return Ok(result);
     }
 
-    // [Authorize(Roles = "Admin")]
     [HttpGet("/api/admin/products/{id}")]
-    public IActionResult GetAdminProductById(int id)
+    public async Task<IActionResult> GetAdminProductById(int id)
     {
-        try
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            conn.Open();
-
-            var cmd = new MySqlCommand(
-                @"SELECT id, name, price, image_path, description, stock_quantity, is_published
-                FROM products
-                WHERE id = @id",
-                conn
-            );
-            cmd.Parameters.AddWithValue("@id", id);
-
-            using var reader = cmd.ExecuteReader();
-            if (!reader.Read())
-                return NotFound();
-
-            var product = new AdminProductDetailsDto
+        var product = await _context.Products
+            .Where(p => p.Id == id)
+            .Select(p => new AdminProductDetailsDto
             {
-                Id = reader.GetInt32("id"),
-                Name = reader.GetString("name"),
-                Price = reader.GetDecimal("price"),
-                ImagePath = reader.GetString("image_path"),
-                Description = reader.GetString("description"),
-                StockQuantity = reader.GetInt32("stock_quantity"),
-                IsPublished = reader.GetBoolean("is_published")
-            };
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                ImagePath = p.ImagePath,
+                Description = p.Description,
+                StockQuantity = p.StockQuantity,
+                IsPublished = p.IsPublished
+            })
+            .FirstOrDefaultAsync();
 
-            return Ok(product);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, "An internal server error occurred.");
-        }
+        if (product == null)
+            return NotFound();
+
+        return Ok(product);
     }
 
-    // [Authorize(Roles = "Admin")]
     [HttpPut("/api/admin/products/{id}")]
-    public IActionResult UpdateAdminProduct(int id, [FromBody] AdminProductUpdateDto dto)
+    public async Task<IActionResult> UpdateAdminProduct(int id, [FromBody] AdminProductUpdateDto dto)
     {
-        try
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            conn.Open();
+        var product = await _context.Products.FindAsync(id);
+        if (product == null) return NotFound();
 
-            // Vérifier si le produit existe
-            using (var checkCmd = new MySqlCommand(
-                "SELECT COUNT(*) FROM products WHERE id = @id",
-                conn))
-            {
-                checkCmd.Parameters.AddWithValue("@id", id);
-                var exists = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+        product.Name = dto.Name;
+        product.Price = dto.Price;
+        product.ImagePath = dto.ImagePath;
+        product.Description = dto.Description;
+        product.StockQuantity = dto.StockQuantity;
+        product.IsPublished = dto.IsPublished;
 
-                if (!exists)
-                    return NotFound();
-            }
+        await _context.SaveChangesAsync();
 
-            // Update du produit
-            using var cmd = new MySqlCommand(
-                @"UPDATE products
-                SET
-                    name = @name,
-                    price = @price,
-                    image_path = @imagePath,
-                    description = @description,
-                    stock_quantity = @stockQuantity,
-                    is_published = @isPublished
-                WHERE id = @id",
-                conn
-            );
-
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@name", dto.Name);
-            cmd.Parameters.AddWithValue("@price", dto.Price);
-            cmd.Parameters.AddWithValue("@imagePath", dto.ImagePath);
-            cmd.Parameters.AddWithValue("@description", dto.Description);
-            cmd.Parameters.AddWithValue("@stockQuantity", dto.StockQuantity);
-            cmd.Parameters.AddWithValue("@isPublished", dto.IsPublished);
-
-            cmd.ExecuteNonQuery();
-
-            return NoContent(); // 204 → standard REST pour update réussi
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, "An internal server error occurred.");
-        }
+        return NoContent();
     }
 
-    // [Authorize(Roles = "Admin")]
+    [HttpPost("/api/admin/products")]
+    public async Task<IActionResult> CreateAdminProduct([FromBody] AdminProductCreateDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var physicalImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", dto.ImagePath.TrimStart('/'));
+        if (!System.IO.File.Exists(physicalImagePath))
+            return BadRequest(new { imagePath = "Selected product image does not exist." });
+
+        var product = new Product
+        {
+            Name = dto.Name,
+            Price = dto.Price,
+            ImagePath = dto.ImagePath,
+            Description = dto.Description,
+            StockQuantity = dto.StockQuantity,
+            IsPublished = dto.IsPublished
+        };
+
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetAdminProductById), new { id = product.Id }, new { id = product.Id });
+    }
+
+    [HttpDelete("/api/admin/products/{id}")]
+    public async Task<IActionResult> DeleteAdminProduct(int id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null) return NotFound(new { message = "Product not found." });
+
+        _context.Products.Remove(product);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     [HttpGet("/api/admin/product-images")]
     public IActionResult GetProductImages()
     {
-        try
-        {
-            var imageDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+        var imageDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
 
-            if (!Directory.Exists(imageDir))
-                return Ok(new List<string>());
+        if (!Directory.Exists(imageDir))
+            return Ok(new List<string>());
 
-            var images = Directory.GetFiles(imageDir)
-                .Select(f => "/images/products/" + Path.GetFileName(f))
-                .ToList();
+        var images = Directory.GetFiles(imageDir)
+            .Select(f => "/images/products/" + Path.GetFileName(f))
+            .ToList();
 
-            return Ok(images);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, "Failed to load images");
-        }
+        return Ok(images);
     }
-
-   // [Authorize(Roles = "Admin")]
-    [HttpPost("/api/admin/products")]
-    public IActionResult CreateAdminProduct([FromBody] AdminProductCreateDto dto)
-    {
-        // DTO validation (Data Annotations)
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new
-            {
-                errors = ModelState.ToDictionary(
-                    e => e.Key,
-                    e => e.Value.Errors.First().ErrorMessage
-                )
-            });
-        }
-
-        // Business validation: image required
-        if (string.IsNullOrWhiteSpace(dto.ImagePath))
-        {
-            return BadRequest(new
-            {
-                errors = new
-                {
-                    imagePath = "Product image is required."
-                }
-            });
-        }
-
-        // Business validation: image must exist on server
-        var physicalImagePath = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "wwwroot",
-            dto.ImagePath.TrimStart('/')
-        );
-
-        if (!System.IO.File.Exists(physicalImagePath))
-        {
-            return BadRequest(new
-            {
-                errors = new
-                {
-                    imagePath = "Selected product image does not exist."
-                }
-            });
-        }
-
-        // Database insert
-        try
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            conn.Open();
-
-            using var cmd = new MySqlCommand(
-                @"INSERT INTO products
-                    (name, price, image_path, description, stock_quantity, is_published)
-                VALUES
-                    (@name, @price, @imagePath, @description, @stockQuantity, @isPublished);
-                SELECT LAST_INSERT_ID();",
-                conn
-            );
-
-            cmd.Parameters.AddWithValue("@name", dto.Name);
-            cmd.Parameters.AddWithValue("@price", dto.Price);
-            cmd.Parameters.AddWithValue("@imagePath", dto.ImagePath);
-            cmd.Parameters.AddWithValue("@description", dto.Description);
-            cmd.Parameters.AddWithValue("@stockQuantity", dto.StockQuantity);
-            cmd.Parameters.AddWithValue("@isPublished", dto.IsPublished);
-
-            var newProductId = Convert.ToInt32(cmd.ExecuteScalar());
-
-            return CreatedAtAction(
-                nameof(GetAdminProductById),
-                new { id = newProductId },
-                new { id = newProductId }
-            );
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, new
-            {
-                message = "An internal server error occurred."
-            });
-        }
-    }
-
-    // [Authorize(Roles = "Admin")]
-    [HttpDelete("/api/admin/products/{id}")]
-    public IActionResult DeleteAdminProduct(int id)
-    {
-        try
-        {
-            using var conn = new MySqlConnection(_connectionString);
-            conn.Open();
-
-            // Check if product exists
-            using (var checkCmd = new MySqlCommand(
-                "SELECT COUNT(*) FROM products WHERE id = @id",
-                conn))
-            {
-                checkCmd.Parameters.AddWithValue("@id", id);
-
-                var exists = Convert.ToInt32(checkCmd.ExecuteScalar());
-                if (exists == 0)
-                    return NotFound(new { message = "Product not found." });
-            }
-
-            // Delete product
-            using var deleteCmd = new MySqlCommand(
-                "DELETE FROM products WHERE id = @id",
-                conn
-            );
-            deleteCmd.Parameters.AddWithValue("@id", id);
-
-            deleteCmd.ExecuteNonQuery();
-
-            return NoContent(); // 204
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, new
-            {
-                message = "An internal server error occurred."
-            });
-        }
-    }
-
-
 }
