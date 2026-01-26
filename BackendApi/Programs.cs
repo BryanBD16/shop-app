@@ -4,7 +4,8 @@ using Microsoft.Extensions.Hosting;
 using BackendApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-
+using BackendApi.Services;
+using BackendApi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +19,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     );
 });
 
+builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddControllers();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
