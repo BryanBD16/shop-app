@@ -75,14 +75,9 @@ db-drop:
 # Tests commands
 # ============================
 
-# Run all tests (unit + integration) for the solution
+# Run all tests
 test:
 	dotnet test
-
-# Run only unit tests for faster feedback; uses verbosity for detailed output
-test-unit:
-	dotnet test --filter "Category=Unit" --verbosity normal
-
 
 
 # ============================
