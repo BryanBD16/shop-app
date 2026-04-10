@@ -13,5 +13,7 @@ namespace BackendApi.DTOs
         public int StockQuantity { get; set; }
 
         public bool IsPublished { get; set; }
+
+        public int CategoryId { get; set; }
     }
 }

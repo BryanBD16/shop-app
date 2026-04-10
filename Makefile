@@ -37,13 +37,6 @@ dev: db-start
 	make -j2 sass backend
 
 # ============================
-# MySQL + Entity Framework Core
-# ============================
-
-# Nom du projet backend (le .csproj)
-PROJECT=BackendApi.csproj
-
-# ============================
 # MySQL control
 # ============================
 
@@ -61,15 +54,28 @@ db-stop:
 # Entity Framework Core commands
 # ============================
 
+# Nom du projet backend (le .csproj)
+PROJECT=BackendApi/BackendApi.csproj
+
 # Apply all migrations to the database
-migrate:
+migrate-up:
 	@echo "Applying EF Core migrations..."
 	dotnet ef database update --project $(PROJECT)
+
+	# make migrate-add NAME=MigrationName
+migrate-add:
+	dotnet ef migrations add $(NAME) --project $(PROJECT)
 
 # Drop the database
 db-drop:
 	@echo "Dropping the database..."
 	dotnet ef database drop --project $(PROJECT) --force
+
+db-reset: db-drop migrate-up
+
+migrate-drop:
+	@echo "Dropping all migrations..."
+	dotnet ef migrations remove --project $(PROJECT) --force
 
 # ============================
 # Tests commands
@@ -79,15 +85,9 @@ db-drop:
 test:
 	dotnet test
 
-
 # ============================
 # Notes
 # ============================
-
-# To add a new migration:
-#   dotnet ef migrations add <MigrationName> --project $(PROJECT)
-# Example:
-#   dotnet ef migrations add InitialCreate --project $(PROJECT)
 
 
 

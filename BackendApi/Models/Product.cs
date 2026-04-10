@@ -23,4 +23,11 @@ public class Product
     public int StockQuantity { get; set; }
 
     public bool IsPublished { get; set; } = true;
+
+    // Foreign key
+    [ForeignKey("Category")]
+    public int CategoryId { get; set; }
+
+    // Navigation property
+    public Category Category { get; set; }
 }

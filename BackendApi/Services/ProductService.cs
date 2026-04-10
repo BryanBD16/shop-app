@@ -39,7 +39,8 @@ public class ProductService : IProductService
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                ImagePath = p.ImagePath
+                ImagePath = p.ImagePath,
+                CategoryId = p.CategoryId
             })
             .ToListAsync();
 
@@ -62,7 +63,8 @@ public class ProductService : IProductService
                 Name = p.Name,
                 Price = p.Price,
                 ImagePath = p.ImagePath,
-                Description = p.Description
+                Description = p.Description,
+                CategoryId = p.CategoryId
             })
             .FirstOrDefaultAsync();
     }
@@ -84,7 +86,8 @@ public class ProductService : IProductService
                 Price = p.Price,
                 ImagePath = p.ImagePath,
                 StockQuantity = p.StockQuantity,
-                IsPublished = p.IsPublished
+                IsPublished = p.IsPublished,
+                CategoryId = p.CategoryId
             })
             .ToListAsync();
 
@@ -109,10 +112,20 @@ public class ProductService : IProductService
                 ImagePath = p.ImagePath,
                 Description = p.Description,
                 StockQuantity = p.StockQuantity,
-                IsPublished = p.IsPublished
+                IsPublished = p.IsPublished,
+                CategoryId = p.CategoryId
             })
             .FirstOrDefaultAsync();
     }
+
+    private async Task ValidateCategory(int categoryId)
+{
+    var exists = await _context.Categories
+        .AnyAsync(c => c.Id == categoryId);
+
+    if (!exists)
+        throw new ArgumentException("Invalid category");
+}
 
     public async Task<int> CreateProductAsync(AdminProductCreateDto dto)
     {
@@ -125,6 +138,8 @@ public class ProductService : IProductService
         if (!File.Exists(imagePath))
             throw new FileNotFoundException("Image does not exist.");
 
+        ValidateCategory(dto.CategoryId).Wait();
+
         var product = new Product
         {
             Name = dto.Name,
@@ -132,7 +147,8 @@ public class ProductService : IProductService
             ImagePath = dto.ImagePath,
             Description = dto.Description,
             StockQuantity = dto.StockQuantity,
-            IsPublished = dto.IsPublished
+            IsPublished = dto.IsPublished,
+            CategoryId = dto.CategoryId
         };
 
         _context.Products.Add(product);
@@ -146,13 +162,15 @@ public class ProductService : IProductService
         var product = await _context.Products.FindAsync(id);
         if (product == null) return false;
 
+        ValidateCategory(dto.CategoryId).Wait();
+
         product.Name = dto.Name;
         product.Price = dto.Price;
         product.ImagePath = dto.ImagePath;
         product.Description = dto.Description;
         product.StockQuantity = dto.StockQuantity;
         product.IsPublished = dto.IsPublished;
-
+        product.CategoryId = dto.CategoryId;
         await _context.SaveChangesAsync();
         return true;
     }
