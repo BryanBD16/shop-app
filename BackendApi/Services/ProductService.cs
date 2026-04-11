@@ -23,10 +23,15 @@ public class ProductService : IProductService
     }
 
     // ================= PUBLIC =================
-    public async Task<PagedResultDto<ProductListItemDto>> GetPublishedProductsAsync(int page, string search)
+    public async Task<PagedResultDto<ProductListItemDto>> GetPublishedProductsAsync(int page, string search, int? categoryId = null)
     {
         var query = _context.Products
             .Where(p => p.IsPublished && p.Name.Contains(search));
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
 
         var totalItems = await query.CountAsync();
 

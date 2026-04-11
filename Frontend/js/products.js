@@ -1,6 +1,7 @@
 let currentPage = 1;
 const pageSize = 12;
 let currentSearch = "";
+let currentCategoryId = "";
 
 // DOM elements
 const productsDiv = document.getElementById('products');
@@ -8,9 +9,16 @@ const searchInput = document.getElementById('searchInput');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const pageInfo = document.getElementById('pageInfo');
+const categorySelect = document.getElementById('categorySelect');
 
 function fetchProducts() {
-    fetch(`http://localhost:5000/api/products?page=${currentPage}&search=${encodeURIComponent(currentSearch)}`)
+    let url = `http://localhost:5000/api/products?page=${currentPage}&search=${encodeURIComponent(currentSearch)}`;
+
+    if (currentCategoryId) {
+        url += `&categoryId=${currentCategoryId}`;
+    }
+
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             productsDiv.innerHTML = '';
@@ -28,29 +36,47 @@ function fetchProducts() {
                                 alt="${p.name}" 
                             />
                         </a>
-                            <div class="card-body d-flex flex-column">
-                                <a href="product-detail.html?id=${p.id}" class="text-decoration-none text-dark">
-                                    <h5 class="card-title">${p.name}</h5>
-                                    <p class="card-text">$${p.price.toFixed(2)}</p>
-                                </a>
-                                <button class="btn btn-orange mt-auto">
-                                    Add to Cart
-                                </button>
-                            </div>
+                        <div class="card-body d-flex flex-column">
+                            <a href="product-detail.html?id=${p.id}" class="text-decoration-none text-dark">
+                                <h5 class="card-title">${p.name}</h5>
+                                <p class="card-text">$${p.price.toFixed(2)}</p>
+                            </a>
+                            <button class="btn btn-orange mt-auto">
+                                Add to Cart
+                            </button>
+                        </div>
                     </div>
                 `;
 
                 productsDiv.appendChild(col);
             });
 
-
-            // Pagination UI
             pageInfo.textContent = `Page ${data.currentPage} of ${data.totalPages}`;
             prevBtn.disabled = data.currentPage === 1;
             nextBtn.disabled = data.currentPage >= data.totalPages;
         })
         .catch(err => console.error(err));
 }
+
+function fetchCategories() {
+    fetch("http://localhost:5000/api/categories")
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(cat => {
+                const option = document.createElement("option");
+                option.value = cat.id;
+                option.textContent = cat.name;
+                categorySelect.appendChild(option);
+            });
+        })
+        .catch(err => console.error(err));
+}
+
+categorySelect.addEventListener('change', () => {
+    currentCategoryId = categorySelect.value;
+    currentPage = 1;
+    fetchProducts();
+});
 
 // Previous
 prevBtn.addEventListener('click', () => {
@@ -74,4 +100,5 @@ searchInput.addEventListener('input', () => {
 });
 
 // Initial load
+fetchCategories();
 fetchProducts();

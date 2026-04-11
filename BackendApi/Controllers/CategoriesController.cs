@@ -21,14 +21,14 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCategoriesAsync()
+    public async Task<IActionResult> Get()
     {
         var categories = await _categoryService.GetCategoriesAsync();
         return Ok(categories);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetCategoryByIdAsync(int id)
+    public async Task<IActionResult> GetById(int id)
     {
         var category = await _categoryService.GetCategoryByIdAsync(id);
         return category == null ? NotFound() : Ok(category);

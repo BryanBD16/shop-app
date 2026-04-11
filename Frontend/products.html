@@ -13,11 +13,23 @@
         <div class="container">
         <h1>Products</h1>
 
-        <label for="searchInput" class="form-label mb-0 small">
-            Search products
-        </label>
-        <br>
-        <input type="text" id="searchInput" placeholder="Search products..." />
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="searchInput" class="form-label mb-0 small">
+                    Search products
+                </label>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search products..." />
+            </div>
+
+            <div class="col-md-6">
+                <label for="categorySelect" class="form-label mb-0 small">
+                    Category
+                </label>
+                <select id="categorySelect" class="form-select">
+                    <option value="">All categories</option>
+                </select>
+            </div>
+        </div>
 
         <br><br>
 

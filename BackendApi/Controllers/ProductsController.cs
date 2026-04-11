@@ -18,9 +18,9 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get(int page = 1, string search = "")
+    public async Task<IActionResult> Get(int page = 1, string search = "", int? categoryId = null)
     {
-        return Ok(await _productService.GetPublishedProductsAsync(page, search));
+        return Ok(await _productService.GetPublishedProductsAsync(page, search, categoryId));
     }
 
     [HttpGet("{id}")]
