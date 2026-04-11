@@ -651,7 +651,8 @@ public async Task CreateProductAsync_SavesProductInDatabase()
         ImagePath = "/images/db.jpg",
         Description = "Desc",
         StockQuantity = 2,
-        IsPublished = false
+        IsPublished = false,
+        CategoryId = 1
     };
 
     var imageFullPath = Path.Combine(
@@ -684,7 +685,8 @@ public async Task CreateProductAsync_ReturnsValidId()
         ImagePath = "/images/id.jpg",
         Description = "Desc",
         StockQuantity = 1,
-        IsPublished = true
+        IsPublished = true,
+        CategoryId = 1
     };
 
     var imageFullPath = Path.Combine(
@@ -824,7 +826,8 @@ public async Task UpdateProductAsync_PersistsChangesInDatabase()
         ImagePath = "img.jpg",
         Description = "Desc",
         StockQuantity = 2,
-        IsPublished = false
+        IsPublished = false,
+        CategoryId = 1
     };
 
     var service = new ProductService(context);
