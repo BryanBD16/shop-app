@@ -36,7 +36,7 @@ public class ProductService : IProductService
         var totalItems = await query.CountAsync();
 
         var items = await query
-            .OrderBy(p => p.Id)
+            .OrderBy(p => p.Name)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .Select(p => new ProductListItemDto
@@ -75,13 +75,17 @@ public class ProductService : IProductService
     }
 
     // ================= ADMIN =================
-    public async Task<PagedResultDto<AdminProductListItemDto>> GetAdminProductsAsync(int page, string search)
+    public async Task<PagedResultDto<AdminProductListItemDto>> GetAdminProductsAsync(int page, string search, int? categoryId = null)
     {
         var query = _context.Products.Where(p => p.Name.Contains(search));
-        var totalItems = await query.CountAsync();
+
+        var totalItems = await query.CountAsync();if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
 
         var items = await query
-            .OrderBy(p => p.Id)
+            .OrderBy(p => p.Name)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .Select(p => new AdminProductListItemDto
@@ -124,13 +128,13 @@ public class ProductService : IProductService
     }
 
     private async Task ValidateCategory(int categoryId)
-{
+    {
     var exists = await _context.Categories
         .AnyAsync(c => c.Id == categoryId);
 
     if (!exists)
         throw new ArgumentException("Invalid category");
-}
+    }
 
     public async Task<int> CreateProductAsync(AdminProductCreateDto dto)
     {

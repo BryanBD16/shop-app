@@ -1,6 +1,7 @@
 let currentPage = 1;
 const pageSize = 12;
 let currentSearch = "";
+let currentCategoryId = "";
 
 // DOM elements
 const productsDiv = document.getElementById('products');
@@ -8,9 +9,15 @@ const searchInput = document.getElementById('searchInput');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const pageInfo = document.getElementById('pageInfo');
+const categorySelect = document.getElementById('categorySelect');
 
 function fetchProducts() {
-    fetch(`http://localhost:5000/api/admin/products?page=${currentPage}&search=${encodeURIComponent(currentSearch)}`)
+    let url = `http://localhost:5000/api/admin/products?page=${currentPage}&search=${encodeURIComponent(currentSearch)}`;
+
+    if (currentCategoryId) {
+        url += `&categoryId=${currentCategoryId}`;
+    }
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             productsDiv.innerHTML = '';
@@ -55,6 +62,26 @@ function fetchProducts() {
         .catch(err => console.error(err));
 }
 
+function fetchCategories() {
+    fetch("http://localhost:5000/api/categories")
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(cat => {
+                const option = document.createElement("option");
+                option.value = cat.id;
+                option.textContent = cat.name;
+                categorySelect.appendChild(option);
+            });
+        })
+        .catch(err => console.error(err));
+}
+
+categorySelect.addEventListener('change', () => {
+    currentCategoryId = categorySelect.value;
+    currentPage = 1;
+    fetchProducts();
+});
+
 // Previous
 prevBtn.addEventListener('click', () => {
     if (currentPage > 1) {
@@ -77,4 +104,5 @@ searchInput.addEventListener('input', () => {
 });
 
 // Initial load
+fetchCategories();
 fetchProducts();

@@ -31,9 +31,9 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("/api/admin/products")]
-    public async Task<IActionResult> GetAdmin(int page = 1, string search = "")
+    public async Task<IActionResult> GetAdmin(int page = 1, string search = "", int? categoryId = null)
     {
-        return Ok(await _productService.GetAdminProductsAsync(page, search));
+        return Ok(await _productService.GetAdminProductsAsync(page, search, categoryId));
     }
 
     [HttpGet("/api/admin/products/{id}")]

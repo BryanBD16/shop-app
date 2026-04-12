@@ -10,7 +10,7 @@ public interface IProductService
     Task<PagedResultDto<ProductListItemDto>> GetPublishedProductsAsync(int page, string search, int? categoryId = null);
     Task<ProductDetailsDto?> GetPublishedProductByIdAsync(int id);
 
-    Task<PagedResultDto<AdminProductListItemDto>> GetAdminProductsAsync(int page, string search);
+    Task<PagedResultDto<AdminProductListItemDto>> GetAdminProductsAsync(int page, string search, int? categoryId = null);
     Task<AdminProductDetailsDto?> GetAdminProductByIdAsync(int id);
 
     Task<int> CreateProductAsync(AdminProductCreateDto dto);
