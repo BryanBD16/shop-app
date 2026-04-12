@@ -12,15 +12,18 @@ const productPrice = document.getElementById('productPrice');
 const productImagePath = document.getElementById('productImagePath');
 const productImagePreview = document.getElementById('productImagePreview');
 const productDescription = document.getElementById('productDescription');
+const productCategory = document.getElementById('productCategory');
 const productStock = document.getElementById('productStock');
 const productIsPublished = document.getElementById('productIsPublished');
 const imageGallery = document.getElementById('imageGallery');
 
 let currentImagePath = null;
+let currentCategoryId = null;
 
 if (!productId) {
     alert("Product not found");
 }
+
 
 // ==========================================
 // Load product data
@@ -34,6 +37,7 @@ fetch(`http://localhost:5000/api/admin/products/${productId}`)
         productName.value = product.name;
         productPrice.value = product.price;
         productDescription.value = product.description;
+        currentCategoryId = product.categoryId;
         productStock.value = product.stockQuantity;
         productIsPublished.value = product.isPublished.toString();
 
@@ -44,12 +48,31 @@ fetch(`http://localhost:5000/api/admin/products/${productId}`)
         productImagePreview.alt = product.name;
 
         loadImageGallery(currentImagePath);
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Error loading product");
-    });
 
+        loadCategories();
+    })
+
+/* ============================
+   Load categories
+============================ */
+function loadCategories() {
+    fetch('http://localhost:5000/api/categories')
+        .then(res => res.json())
+        .then(categories => {
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+
+                if (cat.id === currentCategoryId) {
+                    option.selected = true;
+                }
+
+                productCategory.appendChild(option);
+            });
+        })
+        .catch(err => console.error('Failed to load categories', err));
+}
 // ==========================================
 // Load image gallery
 // ==========================================
@@ -97,13 +120,29 @@ function loadImageGallery(selectedPath) {
 form.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    // Category is required
+    if (!productCategory.value) {
+        alert('Please select a category.');
+        return;
+    }
+
+    // Image selection is required
+    if (!productImagePath.value) {
+        imageGallery.classList.add('image-error');
+        alert('Please select a product image.');
+        return;
+    } else {
+        imageGallery.classList.remove('image-error');
+    }
+
     const payload = {
         name: productName.value.trim(),
         price: parseFloat(productPrice.value),
         imagePath: productImagePath.value,
         description: productDescription.value.trim(),
         stockQuantity: parseInt(productStock.value),
-        isPublished: productIsPublished.value === "true"
+        isPublished: productIsPublished.value === "true",
+        categoryId: parseInt(productCategory.value)
     };
 
     fetch(`http://localhost:5000/api/admin/products/${productId}`, {
