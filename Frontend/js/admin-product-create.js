@@ -3,12 +3,29 @@ const form = document.getElementById('createProductForm');
 const productName = document.getElementById('productName');
 const productPrice = document.getElementById('productPrice');
 const productDescription = document.getElementById('productDescription');
+const productCategory = document.getElementById('productCategory');
 const productStock = document.getElementById('productStock');
 const productIsPublished = document.getElementById('productIsPublished');
 
 const imageGallery = document.getElementById('imageGallery');
 const imagePreview = document.getElementById('productImagePreview');
 const imagePathInput = document.getElementById('productImagePath');
+
+/* ============================
+   Load categories
+============================ */
+fetch('http://localhost:5000/api/categories')
+    .then(res => res.json())
+    .then(categories => {
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name; 
+
+            productCategory.appendChild(option);
+        });
+    })
+    .catch(err => console.error('Failed to load categories', err));
 
 /* ============================
    Load available product images
@@ -42,7 +59,11 @@ fetch('http://localhost:5000/api/admin/product-images')
 ============================ */
 form.addEventListener('submit', (e) => {
     e.preventDefault();
-
+    // Category is required
+    if (!productCategory.value) {
+        alert('Please select a category.');
+        return;
+    }
     // Image selection is required
     if (!imagePathInput.value) {
         imageGallery.classList.add('image-error');
@@ -58,7 +79,8 @@ form.addEventListener('submit', (e) => {
         imagePath: imagePathInput.value,
         description: productDescription.value.trim(),
         stockQuantity: parseInt(productStock.value),
-        isPublished: productIsPublished.value === "true"
+        isPublished: productIsPublished.value === "true",
+        categoryId: parseInt(productCategory.value)
     };
 
     fetch('http://localhost:5000/api/admin/products', {
