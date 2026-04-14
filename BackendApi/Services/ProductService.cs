@@ -147,7 +147,7 @@ public class ProductService : IProductService
         if (!File.Exists(imagePath))
             throw new FileNotFoundException("Image does not exist.");
 
-        ValidateCategory(dto.CategoryId).Wait();
+        ValidateCategory(dto.CategoryId).GetAwaiter().GetResult();
 
         var product = new Product
         {
@@ -171,7 +171,7 @@ public class ProductService : IProductService
         var product = await _context.Products.FindAsync(id);
         if (product == null) return false;
 
-        ValidateCategory(dto.CategoryId).Wait();
+        ValidateCategory(dto.CategoryId).GetAwaiter().GetResult();
 
         product.Name = dto.Name;
         product.Price = dto.Price;
