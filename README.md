@@ -53,7 +53,7 @@ Backend layers:
 ### 1) Clone and enter project
 
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/BryanBD16/shop-app.git>
 cd shop-app
 ```
 
