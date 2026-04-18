@@ -79,10 +79,12 @@ public class ProductService : IProductService
     {
         var query = _context.Products.Where(p => p.Name.Contains(search));
 
-        var totalItems = await query.CountAsync();if (categoryId.HasValue)
+        if (categoryId.HasValue)
         {
             query = query.Where(p => p.CategoryId == categoryId.Value);
         }
+
+        var totalItems = await query.CountAsync();
 
         var items = await query
             .OrderBy(p => p.Name)
