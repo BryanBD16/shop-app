@@ -1,92 +1,132 @@
 # Shop App
 
-## Overview
+Student full-stack e-commerce project built for learning and portfolio use.
 
-This project is a web-based e-commerce application developed as part of a personal learning and portfolio initiative.
+## Project status
 
-The application currently provides core product management features, including a full CRUD interface accessible through an admin panel. Products can be created, updated, and managed by administrators, and are made available for viewing through a separate user-facing interface when marked as available.
+In progress.
 
-The primary objective of this project is educational. It is designed to support a complete end-to-end understanding of web application development, including backend API design, frontend integration, data management, and deployment considerations.
+Core product and category flows are implemented, but the application is not finished yet.
 
-This project also serves as a portfolio piece to demonstrate practical skills, technical decision-making, and the ability to design and implement a functional web application from scratch.
+## What the project currently does
 
----
+- Public product listing and product detail views
+- Product filtering by category
+- Admin product management (create, read, update, delete)
+- Category read operations
+- Backend API with database persistence
+- Unit tests for service layer behavior
 
-## Architecture
+## Tech stack
 
-### General Overview
+- Backend: ASP.NET Core 8 Web API
+- Database access: Entity Framework Core
+- Database: MySQL
+- Frontend: HTML, SCSS, CSS, JavaScript
+- Testing: xUnit
+- Tooling: Makefile for common development commands
 
-The application follows a client-server architecture with a clear separation of concerns between the frontend, backend, and data layers.
+## Architecture summary
 
-The backend is implemented as a RESTful API using C# and ASP.NET Core. It follows a layered architecture composed of controllers, services, and data access components. Controllers handle HTTP requests and responses, services encapsulate business logic, and Entity Framework Core is used to manage database interactions through a DbContext and migrations system. Data Transfer Objects (DTOs) are used to structure and control the data exchanged between layers and exposed through the API.
+The project is split into two main parts:
 
-The frontend is built using JavaScript, HTML, and SCSS. It is responsible for rendering the user interface and interacting with the backend API via HTTP requests. The application includes separate views for administrative and user functionalities, allowing product management (CRUD operations) on the admin side and product browsing on the user side.
+- Frontend: static pages and JavaScript logic for public and admin interfaces
+- BackendApi: REST API, business services, and persistence layer
 
-Data is persisted in a MySQL relational database, managed locally during development. Database schema evolution is handled using Entity Framework Core migrations, ensuring consistency between the application models and the database structure.
+Backend layers:
 
-The overall architecture emphasizes modularity, maintainability, and clarity, making it suitable for learning purposes while reflecting common patterns used in real-world web applications.
+- Controllers: HTTP endpoints
+- Services: business logic
+- Data: EF Core DbContext and migrations
+- DTOs: API contract objects
+- Models: domain entities
 
-### Backend (C# API)
-TODO:
-- Framework used (e.g., ASP.NET Core)
-- Project structure
-- Key components (controllers, services, repositories)
-- Design patterns used
+## Local setup
 
-### Frontend (JavaScript)
-TODO:
-- Framework or library used (Angular, React, etc.)
-- Project structure
-- State management (if applicable)
-- Routing
+### Prerequisites
 
-### Communication
-TODO:
-- Type of communication (REST API)
-- Data format (JSON)
-- Authentication method (if applicable)
+- .NET 8 SDK
+- MySQL
+- Node.js (for Sass compilation)
+- Sass CLI
 
----
+### 1) Clone and enter project
 
-## Design Decisions
-TODO: Explain important technical decisions and trade-offs.
-
-- Decision 1: TODO
-- Decision 2: TODO
-- Decision 3: TODO
-
----
-
-## Data Management
-
-### Models
-TODO: Describe core data models (e.g., Product, User).
-
-### Persistence
-TODO: Explain how data is stored (database, in-memory, external API).
-
-### Data Flow
-TODO: Describe how data flows between frontend and backend.
-
----
-
-## Technologies Used
-
-### Backend
-- TODO: .NET / ASP.NET Core
-- TODO: Additional libraries
-
-### Frontend
-- TODO: Framework (Angular, React, etc.)
-- TODO: Additional libraries
-
-### Dev Tools
-- TODO: Git
-- TODO: Docker (if used)
-- TODO: Other tools
-
----
-
-## Project Structure
 ```bash
-TODO: Provide a tree structure of the project
+git clone <your-repo-url>
+cd shop-app
+```
+
+### 2) Configure database connection
+
+Set your MySQL connection string in:
+
+- BackendApi/appsettings.json
+
+### 3) Apply database migrations
+
+```bash
+cd BackendApi
+dotnet ef database update
+cd ..
+```
+
+### 4) Run backend API
+
+```bash
+cd BackendApi
+dotnet run
+```
+
+Or from the project root:
+
+```bash
+make backend
+```
+
+### 5) Compile frontend styles
+
+```bash
+make sass
+```
+
+### 6) Open frontend pages
+
+Open pages from the Frontend folder in your browser (public and admin pages are separated).
+
+## Testing
+
+Run all tests:
+
+```bash
+dotnet test
+```
+
+Run a specific test group:
+
+```bash
+dotnet test BackendApi.Tests/BackendApi.Tests.csproj --filter "CategoryServiceTests"
+```
+
+## Project structure
+
+```text
+shop-app/
+├── BackendApi/         # API, services, EF Core context, models, migrations
+├── BackendApi.Tests/   # Unit and integration tests
+├── Frontend/           # Static pages, JS, SCSS/CSS
+├── Makefile            # Dev shortcuts
+└── shop-app.sln        # Solution file
+```
+
+## Current limitations
+
+- The application is not finished yet
+- Some features are still being built and refined
+
+## Roadmap (next steps)
+
+- Complete remaining admin and public workflows
+- Improve validation and error handling coverage
+- Expand integration tests
+- Improve deployment and environment documentation
