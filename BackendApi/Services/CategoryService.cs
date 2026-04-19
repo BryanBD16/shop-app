@@ -43,4 +43,44 @@ public class CategoryService : ICategoryService
             Name = category.Name
         };
     }
+
+    public async Task<int> CreateCategoryAsync(AdminCategoryCreateDto dto)
+    {
+        var category = new Category
+        {
+            Name = dto.Name
+        };
+
+        _context.Categories.Add(category);
+        await _context.SaveChangesAsync();
+
+        return category.Id;
+    }
+
+    public async Task<bool> UpdateCategoryAsync(int id, AdminCategoryUpdateDto dto)
+    {
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null) return false;
+
+        category.Name = dto.Name;
+
+        _context.Categories.Update(category);
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> DeleteCategoryAsync(int id)
+    {
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null) return false;
+        if (category.Products != null && category.Products.Any())
+        {
+            throw new InvalidOperationException("Cannot delete category with associated products.");
+        }
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
 }
