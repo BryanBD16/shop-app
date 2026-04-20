@@ -31,6 +31,7 @@ public class CategoryService : ICategoryService
                 Id = c.Id,
                 Name = c.Name
             })
+            .OrderBy(c => c.Name)
             .ToListAsync();
     }
 
@@ -44,12 +45,19 @@ public class CategoryService : ICategoryService
         };
     }
 
+    //category name has to be unique
     public async Task<int> CreateCategoryAsync(AdminCategoryCreateDto dto)
     {
         var category = new Category
         {
             Name = dto.Name
         };
+
+        var existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Name == category.Name);
+        if (existingCategory != null)
+        {
+            throw new InvalidOperationException("Category name already exists.");
+        }
 
         _context.Categories.Add(category);
         await _context.SaveChangesAsync();
@@ -64,6 +72,12 @@ public class CategoryService : ICategoryService
 
         category.Name = dto.Name;
 
+        var existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Name == dto.Name && c.Id != id);
+        if (existingCategory != null)
+        {
+            throw new InvalidOperationException("Category name already exists.");
+        }
+
         _context.Categories.Update(category);
         await _context.SaveChangesAsync();
 
@@ -72,7 +86,9 @@ public class CategoryService : ICategoryService
 
     public async Task<bool> DeleteCategoryAsync(int id)
     {
-        var category = await _context.Categories.FindAsync(id);
+        var category = await _context.Categories    
+                                        .Include(c => c.Products)
+                                        .FirstOrDefaultAsync(c => c.Id == id);
         if (category == null) return false;
         if (category.Products != null && category.Products.Any())
         {

@@ -35,7 +35,7 @@ public class CategoriesController : ControllerBase
         return category == null ? NotFound() : Ok(category);
     }   
 
-    [HttpPost]
+    [HttpPost("/api/admin/categories")]
     public async Task<IActionResult> Create(AdminCategoryCreateDto dto)
     {
         if (!ModelState.IsValid)        {
@@ -51,21 +51,32 @@ public class CategoriesController : ControllerBase
         {
             return BadRequest(new { imagePath = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("/api/admin/categories/{id}")]
     public async Task<IActionResult> Update(int id, AdminCategoryUpdateDto dto)
     {
         if (!ModelState.IsValid)        {
             return BadRequest(ModelState);    
         }
-
-        return await _categoryService.UpdateCategoryAsync(id, dto)
-            ? NoContent()
-            : NotFound();
+        
+        try
+        {
+            return await _categoryService.UpdateCategoryAsync(id, dto)
+                ? NoContent()
+                : NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("/api/admin/categories/{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         try
