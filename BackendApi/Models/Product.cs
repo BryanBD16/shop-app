@@ -25,8 +25,6 @@ public class Product
 
     public bool IsPublished { get; set; } = true;
 
-    public bool IsActive { get; set; } = true;
-
     // Foreign key
     [ForeignKey("Category")]
     public int CategoryId { get; set; }

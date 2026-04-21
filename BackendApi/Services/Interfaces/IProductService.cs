@@ -15,7 +15,5 @@ public interface IProductService
 
     Task<int> CreateProductAsync(AdminProductCreateDto dto);
     Task<bool> UpdateProductAsync(int id, AdminProductUpdateDto dto);
-    Task<bool> DeleteProductAsync(int id);
-
     List<string> GetProductImages();
 }

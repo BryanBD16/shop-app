@@ -65,14 +65,6 @@ public class ProductsController : ControllerBase
             : NotFound();
     }
 
-    [HttpDelete("/api/admin/products/{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        return await _productService.DeleteProductAsync(id)
-            ? NoContent()
-            : NotFound();
-    }
-
     [HttpGet("/api/admin/product-images")]
     public IActionResult Images()
     {
