@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,10 +25,14 @@ public class Product
 
     public bool IsPublished { get; set; } = true;
 
+    public bool IsActive { get; set; } = true;
+
     // Foreign key
     [ForeignKey("Category")]
     public int CategoryId { get; set; }
 
     // Navigation property
     public Category Category { get; set; }
+
+    public ICollection<Discount> Discounts { get; set; } = new List<Discount>();
 }

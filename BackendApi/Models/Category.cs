@@ -13,5 +13,7 @@ public class Category
     public string Name { get; set; }
 
     // Navigation property (one-to-many)
-    public List<Product> Products { get; set; }
+public ICollection<Product> Products { get; set; } = new List<Product>();
+
+public ICollection<Discount> Discounts { get; set; } = new List<Discount>();
 }
