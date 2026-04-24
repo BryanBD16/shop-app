@@ -282,7 +282,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task GetPublishedProductByIdAsync_ReturnsNull_WhenNotPublished()
+    public async Task GetPublishedProductByIdAsync_ThrowsKeyNotFoundException_WhenNotPublished()
     {
         using var context = CreateDbContext();
         var category = new Category { Name = "Electronics" };
@@ -301,13 +301,11 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        var result = await service.GetPublishedProductByIdAsync(product.Id);
-
-        Assert.Null(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetPublishedProductByIdAsync(product.Id));
     }
 
     [Fact]
-    public async Task GetPublishedProductByIdAsync_ReturnsNull_WhenIdDoesNotExist()
+    public async Task GetPublishedProductByIdAsync_ThrowsKeyNotFoundException_WhenIdDoesNotExist()
     {
         using var context = CreateDbContext();
         var category = new Category { Name = "Electronics" };
@@ -325,9 +323,7 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        var result = await service.GetPublishedProductByIdAsync(999);
-
-        Assert.Null(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetPublishedProductByIdAsync(999));
     }
 
     [Fact]
@@ -364,15 +360,13 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task GetPublishedProductByIdAsync_ReturnsNull_WhenDatabaseIsEmpty()
+    public async Task GetPublishedProductByIdAsync_ThrowsKeyNotFoundException_WhenDatabaseIsEmpty()
     {
         using var context = CreateDbContext();
 
         var service = new ProductService(context);
 
-        var result = await service.GetPublishedProductByIdAsync(1);
-
-        Assert.Null(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetPublishedProductByIdAsync(1));
     }
 
     [Fact]
@@ -672,7 +666,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task GetAdminProductByIdAsync_ReturnsNull_WhenIdDoesNotExist()
+    public async Task GetAdminProductByIdAsync_ThrowsKeyNotFoundException_WhenIdDoesNotExist()
     {
         using var context = CreateDbContext();
 
@@ -686,9 +680,7 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        var result = await service.GetAdminProductByIdAsync(999);
-
-        Assert.Null(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetAdminProductByIdAsync(999));
     }
 
     [Fact]
@@ -728,15 +720,13 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task GetAdminProductByIdAsync_ReturnsNull_WhenDatabaseIsEmpty()
+    public async Task GetAdminProductByIdAsync_ThrowsKeyNotFoundException_WhenDatabaseIsEmpty()
     {
         using var context = CreateDbContext();
 
         var service = new ProductService(context);
 
-        var result = await service.GetAdminProductByIdAsync(1);
-
-        Assert.Null(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetAdminProductByIdAsync(1));
     }
 
 #endregion
@@ -788,7 +778,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task CreateProductAsync_ThrowsArgumentException_WhenCategoryDoesNotExist()
+    public async Task CreateProductAsync_ThrowsInvalidOperationException_WhenCategoryDoesNotExist()
     {
         using var context = CreateDbContext();
 
@@ -814,13 +804,13 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.CreateProductAsync(dto)
         );
     }
 
     [Fact]
-    public async Task CreateProductAsync_ThrowsFileNotFoundException_WhenImageDoesNotExist()
+    public async Task CreateProductAsync_ThrowsInvalidOperationException_WhenImageDoesNotExist()
     {
         using var context = CreateDbContext();
         var category = new Category { Name = "Electronics" };
@@ -840,7 +830,7 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        await Assert.ThrowsAsync<FileNotFoundException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.CreateProductAsync(dto)
         );
     }
@@ -960,11 +950,10 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        var result = await service.UpdateProductAsync(product.Id, dto);
+        await service.UpdateProductAsync(product.Id, dto);
 
         var updated = await context.Products.FindAsync(product.Id);
 
-        Assert.True(result);
         Assert.Equal("New", updated!.Name);
         Assert.Equal(99, updated.Price);
         Assert.Equal("new.jpg", updated.ImagePath);
@@ -975,7 +964,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task UpdateProductAsync_ReturnsFalse_WhenProductDoesNotExist()
+    public async Task UpdateProductAsync_ThrowsKeyNotFoundException_WhenProductDoesNotExist()
     {
         using var context = CreateDbContext();
         var category = new Category { Name = "Electronics" };
@@ -995,13 +984,11 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        var result = await service.UpdateProductAsync(999, dto);
-
-        Assert.False(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.UpdateProductAsync(999, dto));
     }
 
     [Fact]
-    public async Task UpdateProductAsync_ThrowsArgumentException_WhenCategoryDoesNotExist()
+    public async Task UpdateProductAsync_ThrowsInvalidOperationException_WhenCategoryDoesNotExist()
     {
         using var context = CreateDbContext();
         var category = new Category { Name = "Electronics" };
@@ -1025,7 +1012,7 @@ public class ProductServiceTests
 
         var service = new ProductService(context);
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.UpdateProductAsync(product.Id, dto)
         );
     }

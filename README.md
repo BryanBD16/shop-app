@@ -17,14 +17,30 @@ Core product and category flows are implemented, but the application is not fini
 - Backend API with database persistence
 - Unit tests for service layer behavior
 
-## Tech stack
+## Tech Stack
 
-- Backend: ASP.NET Core 8 Web API
-- Database access: Entity Framework Core
-- Database: MySQL
-- Frontend: HTML, SCSS, CSS, JavaScript
-- Testing: xUnit
-- Tooling: Makefile for common development commands
+### Backend
+- ASP.NET Core 8 Web API
+- Entity Framework Core (MySQL provider)
+- RESTful API architecture
+- DTO-based design
+- Global exception handling middleware (ProblemDetails)
+- C# async/await patterns
+
+### Database
+- MySQL
+
+### Frontend
+- Vanilla JavaScript (no framework)
+- HTML5
+- SCSS / CSS
+
+### Testing
+- xUnit
+
+### Tooling
+- Makefile (development automation)
+- EF Core migrations
 
 ## Architecture summary
 
@@ -118,6 +134,43 @@ shop-app/
 ├── Makefile            # Dev shortcuts
 └── shop-app.sln        # Solution file
 ```
+
+## Development workflow
+
+### Branching strategy
+
+This project follows a simple feature-branch workflow:
+
+- `main` → stable version
+- `feature/*` → new features or improvements
+- `fix/*` → bug fixes
+
+Each GitHub issue is developed in its own branch.
+
+Example:
+```bash
+feature/product-discount
+fix/category-delete-bug
+```
+
+### Commit convention
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+
+Format :
+```bash
+type(scope): description
+```
+
+Example :
+```bash
+feat(product): add discount system
+fix(category): prevent deletion when products exist
+refactor(api): simplify error handling with middleware
+```
+
+
+
 
 ## Current limitations
 

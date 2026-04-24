@@ -79,7 +79,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task GetCategoryByIdAsync_ReturnsNull_WhenIdDoesNotExist()
+    public async Task GetCategoryByIdAsync_ThrowsKeyNotFoundException_WhenIdDoesNotExist()
     {
         using var context = CreateDbContext();
 
@@ -88,9 +88,7 @@ public class CategoryServiceTests
 
         var service = new CategoryService(context);
 
-        var result = await service.GetCategoryByIdAsync(999);
-
-        Assert.Null(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetCategoryByIdAsync(999));
     }
 
 #endregion
@@ -130,12 +128,26 @@ public class CategoryServiceTests
         Assert.Equal(255, createdCategory!.Name.Length);
     }
 
+    [Fact]
+    public async Task CreateCategoryAsync_ThrowsInvalidOperationException_WhenNameAlreadyExists()
+    {
+        using var context = CreateDbContext();
+
+        context.Categories.Add(new Category { Name = "Audio" });
+        await context.SaveChangesAsync();
+
+        var service = new CategoryService(context);
+        var dto = new AdminCategoryCreateDto { Name = "Audio" };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateCategoryAsync(dto));
+    }
+
 #endregion
 
 #region UpdateCategoryAsync
 
     [Fact]
-    public async Task UpdateCategoryAsync_ReturnsTrueAndUpdatesCategory_WhenCategoryExists()
+    public async Task UpdateCategoryAsync_UpdatesCategory_WhenCategoryExists()
     {
         using var context = CreateDbContext();
 
@@ -146,25 +158,22 @@ public class CategoryServiceTests
         var service = new CategoryService(context);
         var dto = new AdminCategoryUpdateDto { Name = "New Name" };
 
-        var updated = await service.UpdateCategoryAsync(category.Id, dto);
+        await service.UpdateCategoryAsync(category.Id, dto);
         var updatedCategory = await context.Categories.FindAsync(category.Id);
 
-        Assert.True(updated);
         Assert.NotNull(updatedCategory);
         Assert.Equal("New Name", updatedCategory!.Name);
     }
 
     [Fact]
-    public async Task UpdateCategoryAsync_ReturnsFalse_WhenCategoryDoesNotExist()
+    public async Task UpdateCategoryAsync_ThrowsKeyNotFoundException_WhenCategoryDoesNotExist()
     {
         using var context = CreateDbContext();
 
         var service = new CategoryService(context);
         var dto = new AdminCategoryUpdateDto { Name = "New Name" };
 
-        var updated = await service.UpdateCategoryAsync(999, dto);
-
-        Assert.False(updated);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.UpdateCategoryAsync(999, dto));
     }
 
     [Fact]
@@ -179,12 +188,27 @@ public class CategoryServiceTests
         var service = new CategoryService(context);
         var dto = new AdminCategoryUpdateDto { Name = new string('B', 255) };
 
-        var updated = await service.UpdateCategoryAsync(category.Id, dto);
+        await service.UpdateCategoryAsync(category.Id, dto);
         var updatedCategory = await context.Categories.FindAsync(category.Id);
 
-        Assert.True(updated);
         Assert.NotNull(updatedCategory);
         Assert.Equal(255, updatedCategory!.Name.Length);
+    }
+
+    [Fact]
+    public async Task UpdateCategoryAsync_ThrowsInvalidOperationException_WhenNameAlreadyExists()
+    {
+        using var context = CreateDbContext();
+
+        var firstCategory = new Category { Name = "Audio" };
+        var secondCategory = new Category { Name = "Books" };
+        context.Categories.AddRange(firstCategory, secondCategory);
+        await context.SaveChangesAsync();
+
+        var service = new CategoryService(context);
+        var dto = new AdminCategoryUpdateDto { Name = "Audio" };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateCategoryAsync(secondCategory.Id, dto));
     }
 
 #endregion
@@ -192,7 +216,7 @@ public class CategoryServiceTests
 #region DeleteCategoryAsync
 
     [Fact]
-    public async Task DeleteCategoryAsync_ReturnsTrueAndDeletesCategory_WhenCategoryExists()
+    public async Task DeleteCategoryAsync_DeletesCategory_WhenCategoryExists()
     {
         using var context = CreateDbContext();
 
@@ -202,23 +226,20 @@ public class CategoryServiceTests
 
         var service = new CategoryService(context);
 
-        var deleted = await service.DeleteCategoryAsync(category.Id);
+        await service.DeleteCategoryAsync(category.Id);
         var deletedCategory = await context.Categories.FindAsync(category.Id);
 
-        Assert.True(deleted);
         Assert.Null(deletedCategory);
     }
 
     [Fact]
-    public async Task DeleteCategoryAsync_ReturnsFalse_WhenCategoryDoesNotExist()
+    public async Task DeleteCategoryAsync_ThrowsKeyNotFoundException_WhenCategoryDoesNotExist()
     {
         using var context = CreateDbContext();
 
         var service = new CategoryService(context);
 
-        var deleted = await service.DeleteCategoryAsync(999);
-
-        Assert.False(deleted);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.DeleteCategoryAsync(999));
     }
 
     [Fact]

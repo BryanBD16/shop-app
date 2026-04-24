@@ -26,7 +26,12 @@ public class ProductService : IProductService
     public async Task<PagedResultDto<ProductListItemDto>> GetPublishedProductsAsync(int page, string search, int? categoryId = null)
     {
         var query = _context.Products
-            .Where(p => p.IsPublished && p.Name.Contains(search));
+            .Where(p => p.IsPublished);
+
+        if (search != null)
+        {
+            query = query.Where(p => p.Name.Contains(search));
+        }
 
         if (categoryId.HasValue)
         {
@@ -58,7 +63,7 @@ public class ProductService : IProductService
         };
     }
 
-    public async Task<ProductDetailsDto?> GetPublishedProductByIdAsync(int id)
+    public async Task<ProductDetailsDto> GetPublishedProductByIdAsync(int id)
     {
         return await _context.Products
             .Where(p => p.IsPublished && p.Id == id)
@@ -71,13 +76,18 @@ public class ProductService : IProductService
                 Description = p.Description,
                 CategoryId = p.CategoryId
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Product with " + id + " not found.");
     }
 
     // ================= ADMIN =================
     public async Task<PagedResultDto<AdminProductListItemDto>> GetAdminProductsAsync(int page, string search, int? categoryId = null)
     {
-        var query = _context.Products.Where(p => p.Name.Contains(search));
+        var query = _context.Products.AsQueryable();
+
+        if (search != null)
+        {
+            query = query.Where(p => p.Name.Contains(search));
+        }
 
         if (categoryId.HasValue)
         {
@@ -111,7 +121,7 @@ public class ProductService : IProductService
         };
     }
 
-    public async Task<AdminProductDetailsDto?> GetAdminProductByIdAsync(int id)
+    public async Task<AdminProductDetailsDto> GetAdminProductByIdAsync(int id)
     {
         return await _context.Products
             .Where(p => p.Id == id)
@@ -126,16 +136,15 @@ public class ProductService : IProductService
                 IsPublished = p.IsPublished,
                 CategoryId = p.CategoryId
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Product with " + id + " not found.");
     }
 
     private async Task ValidateCategory(int categoryId)
     {
-    var exists = await _context.Categories
-        .AnyAsync(c => c.Id == categoryId);
+        var exists = await _context.Categories.AnyAsync(c => c.Id == categoryId);
 
-    if (!exists)
-        throw new ArgumentException("Invalid category");
+        if (!exists)
+            throw new InvalidOperationException("Invalid category");
     }
 
     public async Task<int> CreateProductAsync(AdminProductCreateDto dto)
@@ -147,9 +156,9 @@ public class ProductService : IProductService
         );
 
         if (!File.Exists(imagePath))
-            throw new FileNotFoundException("Image does not exist.");
+            throw new InvalidOperationException("Image does not exist.");
 
-        ValidateCategory(dto.CategoryId).GetAwaiter().GetResult();
+        await ValidateCategory(dto.CategoryId);
 
         var product = new Product
         {
@@ -168,12 +177,12 @@ public class ProductService : IProductService
         return product.Id;
     }
 
-    public async Task<bool> UpdateProductAsync(int id, AdminProductUpdateDto dto)
+    public async Task UpdateProductAsync(int id, AdminProductUpdateDto dto)
     {
         var product = await _context.Products.FindAsync(id);
-        if (product == null) return false;
+        if (product == null) throw new KeyNotFoundException("Product with " + id + " not found.");
 
-        ValidateCategory(dto.CategoryId).GetAwaiter().GetResult();
+        await ValidateCategory(dto.CategoryId);
 
         product.Name = dto.Name;
         product.Price = dto.Price;
@@ -183,7 +192,7 @@ public class ProductService : IProductService
         product.IsPublished = dto.IsPublished;
         product.CategoryId = dto.CategoryId;
         await _context.SaveChangesAsync();
-        return true;
+        return;
     }
 
     public List<string> GetProductImages()

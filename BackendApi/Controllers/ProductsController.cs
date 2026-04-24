@@ -1,8 +1,10 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using BackendApi.Dtos.Admin;
 using BackendApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace BackendApi.Controllers;
 
@@ -27,7 +29,7 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var product = await _productService.GetPublishedProductByIdAsync(id);
-        return product == null ? NotFound() : Ok(product);
+        return  Ok(product);
     }
 
     [HttpGet("/api/admin/products")]
@@ -40,29 +42,23 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> GetAdminById(int id)
     {
         var product = await _productService.GetAdminProductByIdAsync(id);
-        return product == null ? NotFound() : Ok(product);
+        return  Ok(product);
     }
 
     [HttpPost("/api/admin/products")]
     public async Task<IActionResult> Create(AdminProductCreateDto dto)
     {
-        try
-        {
-            var id = await _productService.CreateProductAsync(dto);
-            return CreatedAtAction(nameof(GetAdminById), new { id }, new { id });
-        }
-        catch (FileNotFoundException ex)
-        {
-            return BadRequest(new { imagePath = ex.Message });
-        }
+
+         var id = await _productService.CreateProductAsync(dto);
+        return CreatedAtAction(nameof(GetAdminById), new { id }, new { id });
+
     }
 
     [HttpPut("/api/admin/products/{id}")]
     public async Task<IActionResult> Update(int id, AdminProductUpdateDto dto)
     {
-        return await _productService.UpdateProductAsync(id, dto)
-            ? NoContent()
-            : NotFound();
+        await _productService.UpdateProductAsync(id, dto);
+        return NoContent();
     }
 
     [HttpGet("/api/admin/product-images")]

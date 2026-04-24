@@ -35,10 +35,14 @@ public class CategoryService : ICategoryService
             .ToListAsync();
     }
 
-    public async Task<CategoryDto?> GetCategoryByIdAsync(int id)
+    public async Task<CategoryDto> GetCategoryByIdAsync(int id)
     {
         var category = await _context.Categories.FindAsync(id);
-        return category == null ? null : new CategoryDto
+
+        if (category == null)
+            throw new KeyNotFoundException("Category not found");
+
+        return new CategoryDto
         {
             Id = category.Id,
             Name = category.Name
@@ -65,10 +69,10 @@ public class CategoryService : ICategoryService
         return category.Id;
     }
 
-    public async Task<bool> UpdateCategoryAsync(int id, AdminCategoryUpdateDto dto)
+    public async Task UpdateCategoryAsync(int id, AdminCategoryUpdateDto dto)
     {
         var category = await _context.Categories.FindAsync(id);
-        if (category == null) return false;
+        if (category == null) throw new KeyNotFoundException($"Category with id {id} not found.");
 
         category.Name = dto.Name;
 
@@ -81,15 +85,15 @@ public class CategoryService : ICategoryService
         _context.Categories.Update(category);
         await _context.SaveChangesAsync();
 
-        return true;
+        return;
     }
 
-    public async Task<bool> DeleteCategoryAsync(int id)
+    public async Task DeleteCategoryAsync(int id)
     {
         var category = await _context.Categories    
                                         .Include(c => c.Products)
                                         .FirstOrDefaultAsync(c => c.Id == id);
-        if (category == null) return false;
+        if (category == null) throw new KeyNotFoundException($"Category with id {id} not found.");
         if (category.Products != null && category.Products.Any())
         {
             throw new InvalidOperationException("Cannot delete category with associated products.");
@@ -97,6 +101,6 @@ public class CategoryService : ICategoryService
         _context.Categories.Remove(category);
         await _context.SaveChangesAsync();
 
-        return true;
+        return;
     }
 }
