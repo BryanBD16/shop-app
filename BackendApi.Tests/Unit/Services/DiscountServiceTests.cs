@@ -439,4 +439,139 @@ public class DiscountServiceTests
 
 #endregion
 
+#region GetDiscountsAsync
+
+    [Fact]
+    public async Task GetDiscountsAsync_ReturnsAllDiscounts_WhenNoFiltersAreProvided()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var product = new Product { Name = "Laptop", CategoryId = category.Id };
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        context.Discounts.Add(new Discount
+        {
+            Title = "Product Discount",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(3),
+            ProductId = product.Id
+        });
+
+        context.Discounts.Add(new Discount
+        {
+            Title = "Category Discount",
+            Percentage = 15,
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(4),
+            CategoryId = category.Id
+        });
+
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+
+        var result = await service.GetDiscountsAsync();
+
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, discount => discount.Title == "Product Discount");
+        Assert.Contains(result, discount => discount.Title == "Category Discount");
+    }
+
+    [Fact]
+    public async Task GetDiscountsAsync_FiltersDiscountsByStartAndEndDate()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        context.Discounts.Add(new Discount
+        {
+            Title = "Inside Range",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(5),
+            EndDate = DateTime.UtcNow.AddDays(7),
+            CategoryId = category.Id
+        });
+
+        context.Discounts.Add(new Discount
+        {
+            Title = "Before Range",
+            Percentage = 20,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            CategoryId = category.Id
+        });
+
+        context.Discounts.Add(new Discount
+        {
+            Title = "After Range",
+            Percentage = 30,
+            StartDate = DateTime.UtcNow.AddDays(10),
+            EndDate = DateTime.UtcNow.AddDays(12),
+            CategoryId = category.Id
+        });
+
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var startDate = DateTime.UtcNow.AddDays(4);
+        var endDate = DateTime.UtcNow.AddDays(8);
+
+        var result = await service.GetDiscountsAsync(startDate, endDate);
+
+        Assert.Single(result);
+        Assert.Equal("Inside Range", result[0].Title);
+    }
+
+#endregion
+
+#region GetDiscountByIdAsync
+
+    [Fact]
+    public async Task GetDiscountByIdAsync_ReturnsDiscount_WhenDiscountExists()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Books" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Book Sale",
+            Percentage = 25,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(5),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+
+        var result = await service.GetDiscountByIdAsync(discount.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(discount.Id, result!.Id);
+        Assert.Equal("Book Sale", result.Title);
+        Assert.Equal(category.Id, result.CategoryId);
+    }
+
+    [Fact]
+    public async Task GetDiscountByIdAsync_ThrowsKeyNotFoundException_WhenIdDoesNotExist()
+    {
+        using var context = CreateDbContext();
+
+        var service = new DiscountService(context);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetDiscountByIdAsync(999));
+    }
+
+#endregion
+
 }

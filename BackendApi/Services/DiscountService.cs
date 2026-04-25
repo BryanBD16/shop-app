@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace BackendApi.Services;
 
@@ -23,121 +24,156 @@ public class DiscountService : IDiscountService
 
     // ================= PUBLIC =================
 
+    public async Task<List<DiscountDto>> GetDiscountsAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var query = _context.Discounts.AsQueryable();
+
+        if (startDate.HasValue)
+        {
+            query = query.Where(d => d.StartDate >= startDate.Value);
+        }
+
+        if (endDate.HasValue)
+        {
+            query = query.Where(d => d.EndDate <= endDate.Value);
+        }
+
+        var discounts = await query
+            .Select(d => new DiscountDto
+            {
+                Id = d.Id,
+                Title = d.Title,
+                Percentage = d.Percentage,
+                StartDate = d.StartDate,
+                EndDate = d.EndDate,
+                ProductId = d.ProductId,
+                CategoryId = d.CategoryId
+            })
+            .ToListAsync();
+
+        return discounts;
+    }
+
+    public async Task<DiscountDto> GetDiscountByIdAsync(int id)
+    {
+        var discount = await _context.Discounts
+            .Where(d => d.Id == id)
+            .Select(d => new DiscountDto
+            {
+                Id = d.Id,
+                Title = d.Title,
+                Percentage = d.Percentage,
+                StartDate = d.StartDate,
+                EndDate = d.EndDate,
+                ProductId = d.ProductId,
+                CategoryId = d.CategoryId
+            })
+            .FirstOrDefaultAsync();
+        return discount ?? throw new KeyNotFoundException("Discount not found");
+    }
 
     // ================= ADMIN =================
 
-    public Task<int> CreateDiscountAsync(AdminDiscountCreateDto dto)
+    public async Task<int> CreateDiscountAsync(AdminDiscountCreateDto dto)
     {
-        validateProductAndCategory(dto.ProductId, dto.CategoryId);
-        validateDateCreationAsync(dto.StartDate, dto.EndDate, dto.ProductId, dto.CategoryId);
+        await ValidateProductAndCategoryAsync(dto.ProductId, dto.CategoryId);
+        await ValidateDateCreationAsync(dto.StartDate, dto.EndDate, dto.ProductId, dto.CategoryId);
 
-        if(dto.ProductId != null)
+        
+        var discount = new Discount
         {
-            var discount = new Discount
-            {
-                Title = dto.Title,
-                Percentage = dto.Percentage,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                ProductId = dto.ProductId
-            };
-            _context.Discounts.Add(discount);
-            _context.SaveChanges();
-            return Task.FromResult(discount.Id);
-        }
-        else if(dto.CategoryId != null)
-        {
-            var discount = new Discount
-            {
-                Title = dto.Title,
-                Percentage = dto.Percentage,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                CategoryId = dto.CategoryId
-            };
-            _context.Discounts.Add(discount);
-            _context.SaveChanges();
-            return Task.FromResult(discount.Id);
-        }
-        throw new InvalidOperationException("Either productId or categoryId must be provided");
+            Title = dto.Title,
+            Percentage = dto.Percentage,
+            StartDate = dto.StartDate,
+            EndDate = dto.EndDate,
+            ProductId = dto.ProductId,
+            CategoryId = dto.CategoryId
+        };
+        _context.Discounts.Add(discount);
+        await _context.SaveChangesAsync();
+        return discount.Id;
     }
 
-    public Task<bool> UpdateDiscountAsync(int id, AdminDiscountUpdateDto dto)
+    public async Task<bool> UpdateDiscountAsync(int id, AdminDiscountUpdateDto dto)
     {
         // TODO
         throw new NotImplementedException();
     }
 
-    public Task<List<DiscountDto>> GetDiscountsAsync()
+    public async Task ValidateDateCreationAsync(
+        DateTime startDate,
+        DateTime? endDate,
+        int? productId = null,
+        int? categoryId = null)
     {
-        // TODO
-        throw new NotImplementedException();
-    }
+        var now = DateTime.UtcNow;
 
-    public Task<DiscountDto?> GetDiscountByIdAsync(int id)
-    {
-        // TODO
-        throw new NotImplementedException();
-    }
-
-    public Task validateDateCreationAsync(DateTime startDate, DateTime? endDate, int? productId = null, int? categoryId = null)
-    {
-            var product = productId != null ? new Product { Id = productId.Value } : null;
-            var category = categoryId != null ? new Category { Id = categoryId.Value } : null;
-        if (startDate < DateTime.UtcNow)
+        if (startDate < now)
             throw new InvalidOperationException("Start date cannot be in the past");
 
-        if (endDate <= startDate)
+        if (endDate.HasValue && endDate <= startDate)
             throw new InvalidOperationException("End date must be after start date");
 
-        if(product != null)
+        if (productId != null)
         {
-            var overlappingProductDiscount = _context.Discounts
-                .Where(d => d.ProductId == product.Id)
-                .Where(d => (d.StartDate < endDate && d.EndDate > startDate )|| (d.EndDate == null && (d.StartDate < endDate || endDate == null)))
-                .FirstOrDefault();
+            var exists = await HasOverlappingDiscountAsync(
+                d => d.ProductId == productId,
+                startDate,
+                endDate
+            );
 
-            if (overlappingProductDiscount != null)
+            if (exists)
                 throw new InvalidOperationException("There is already an overlapping discount for this product");
         }
 
-        if(category != null)
+        if (categoryId != null)
         {
-            var overlappingCategoryDiscount = _context.Discounts
-                .Where(d => d.CategoryId == category.Id)
-                .Where(d => (d.StartDate < endDate && d.EndDate > startDate )|| (d.EndDate == null && (d.StartDate < endDate || endDate == null)))
-                .FirstOrDefault();
+            var exists = await HasOverlappingDiscountAsync(
+                d => d.CategoryId == categoryId,
+                startDate,
+                endDate
+            );
 
-            if (overlappingCategoryDiscount != null)
+            if (exists)
                 throw new InvalidOperationException("There is already an overlapping discount for this category");
         }
-
-        return Task.CompletedTask;
     }
 
-    public Task validateProductAndCategory(int? productId, int? categoryId)
+    private async Task<bool> HasOverlappingDiscountAsync(
+        Expression<Func<Discount, bool>> filter,
+        DateTime newStart,
+        DateTime? newEnd)
     {
-        var product = productId != null ? new Product { Id = productId.Value } : null;
-        var category = categoryId != null ? new Category { Id = categoryId.Value } : null;
+        return await _context.Discounts
+            .Where(filter)
+            .Where(d =>
+                // cas général de chevauchement
+                (d.EndDate == null || newStart < d.EndDate) &&
+                (newEnd == null || d.StartDate < newEnd)
+            )
+            .AnyAsync();
+    }
 
-        if (product == null && category == null)
+    public async Task ValidateProductAndCategoryAsync(int? productId, int? categoryId)
+    {
+        if (productId == null && categoryId == null)
             throw new InvalidOperationException("Either product or category must be provided");
 
-        if (product != null && category != null)
+        if (productId != null && categoryId != null)
             throw new InvalidOperationException("Cannot provide both product and category");
 
-        if(product != null)
+        if(productId != null)
         {
-            var existingProduct = _context.Products.Find(product.Id);
-            if (existingProduct == null)
+            var exists = await _context.Products.AnyAsync(p => p.Id == productId);
+            if (!exists)
                 throw new KeyNotFoundException("Product not found");
         }
-        if(category != null)
+        if(categoryId != null)
         {
-            var existingCategory = _context.Categories.Find(category.Id);
-            if (existingCategory == null)
+            var exists = await _context.Categories.AnyAsync(c => c.Id == categoryId);
+            if (!exists)
                 throw new KeyNotFoundException("Category not found");
         }
-        return Task.CompletedTask;
+        return ;
     }
 }

@@ -21,6 +21,13 @@ public class DiscountsController : ControllerBase
         _discountService = discountService;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetDiscounts(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var discounts = await _discountService.GetDiscountsAsync(startDate, endDate);
+        return Ok(discounts);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
