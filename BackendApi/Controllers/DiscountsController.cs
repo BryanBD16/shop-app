@@ -42,5 +42,11 @@ public class DiscountsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = discountId }, discountId);
     }
     
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateDiscount(int id, [FromBody] AdminDiscountUpdateDto dto)
+    {
+        await _discountService.UpdateDiscountAsync(id, dto);
+        return NoContent();
+    }
 
 }

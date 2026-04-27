@@ -1,5 +1,6 @@
 using BackendApi.Data;
 using BackendApi.DTOs;
+using BackendApi.Dtos.Admin;
 using BackendApi.Models;
 using BackendApi.Services;
 using Microsoft.EntityFrameworkCore;
@@ -570,6 +571,495 @@ public class DiscountServiceTests
         var service = new DiscountService(context);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() => service.GetDiscountByIdAsync(999));
+    }
+
+#endregion
+
+#region UpdateDiscountAsync
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenChangingStartDateToPastDate()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Launch Sale",
+            Percentage = 15,
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(7),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Launch Sale Updated",
+            Percentage = 15,
+            StartDate = DateTime.UtcNow.AddMinutes(-10),
+            EndDate = DateTime.UtcNow.AddDays(8),
+            CategoryId = category.Id
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(discount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenChangingEndDateToPastDate()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Weekend Sale",
+            Percentage = 12,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(5),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Weekend Sale Updated",
+            Percentage = 12,
+            StartDate = discount.StartDate,
+            EndDate = DateTime.UtcNow.AddMinutes(-5),
+            CategoryId = category.Id
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(discount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_AllowsChangingOnlyTitleAndEndDate_WhenStartDateHasPassed()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Books" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var startedDiscount = new Discount
+        {
+            Title = "Book Spring Sale",
+            Percentage = 20,
+            StartDate = DateTime.UtcNow.AddDays(-2),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(startedDiscount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Book Spring Sale Extended",
+            Percentage = startedDiscount.Percentage,
+            StartDate = startedDiscount.StartDate,
+            EndDate = DateTime.UtcNow.AddDays(5),
+            CategoryId = startedDiscount.CategoryId
+        };
+
+        await service.UpdateDiscountAsync(startedDiscount.Id, dto);
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenChangingPercentageAfterStartDate()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Gaming" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var startedDiscount = new Discount
+        {
+            Title = "Gaming Sale",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(-1),
+            EndDate = DateTime.UtcNow.AddDays(3),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(startedDiscount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = startedDiscount.Title,
+            Percentage = 35,
+            StartDate = startedDiscount.StartDate,
+            EndDate = startedDiscount.EndDate,
+            CategoryId = startedDiscount.CategoryId
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(startedDiscount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenChangingProductIdAfterStartDate()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Hardware" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var product1 = new Product { Name = "Mouse", CategoryId = category.Id };
+        var product2 = new Product { Name = "Keyboard", CategoryId = category.Id };
+        context.Products.AddRange(product1, product2);
+        await context.SaveChangesAsync();
+
+        var startedDiscount = new Discount
+        {
+            Title = "Accessory Discount",
+            Percentage = 18,
+            StartDate = DateTime.UtcNow.AddDays(-3),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            ProductId = product1.Id
+        };
+        context.Discounts.Add(startedDiscount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = startedDiscount.Title,
+            Percentage = startedDiscount.Percentage,
+            StartDate = startedDiscount.StartDate,
+            EndDate = startedDiscount.EndDate,
+            ProductId = product2.Id
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(startedDiscount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenBothProductAndCategoryProvided()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var product = new Product { Name = "Laptop", CategoryId = category.Id };
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Initial Discount",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(6),
+            ProductId = product.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Updated Discount",
+            Percentage = 12,
+            StartDate = DateTime.UtcNow.AddDays(3),
+            EndDate = DateTime.UtcNow.AddDays(7),
+            ProductId = product.Id,
+            CategoryId = category.Id
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(discount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenNeitherProductNorCategoryProvided()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Accessories" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Initial Category Discount",
+            Percentage = 14,
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(5),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Invalid Update",
+            Percentage = 14,
+            StartDate = DateTime.UtcNow.AddDays(3),
+            EndDate = DateTime.UtcNow.AddDays(6),
+            ProductId = null,
+            CategoryId = null
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(discount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsKeyNotFoundException_WhenProductDoesNotExist()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Computers" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Category Promo",
+            Percentage = 8,
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(5),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Switch To Missing Product",
+            Percentage = 8,
+            StartDate = DateTime.UtcNow.AddDays(3),
+            EndDate = DateTime.UtcNow.AddDays(7),
+            ProductId = 9999,
+            CategoryId = null
+        };
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.UpdateDiscountAsync(discount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsKeyNotFoundException_WhenCategoryDoesNotExist()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Displays" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var product = new Product { Name = "Monitor", CategoryId = category.Id };
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Product Promo",
+            Percentage = 9,
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(6),
+            ProductId = product.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Switch To Missing Category",
+            Percentage = 9,
+            StartDate = DateTime.UtcNow.AddDays(3),
+            EndDate = DateTime.UtcNow.AddDays(8),
+            ProductId = null,
+            CategoryId = 9999
+        };
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.UpdateDiscountAsync(discount.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenOverlappingProductDiscount()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Phones" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var product = new Product { Name = "Smartphone", CategoryId = category.Id };
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        var discountToUpdate = new Discount
+        {
+            Title = "Early Discount",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            ProductId = product.Id
+        };
+
+        var existingDiscount = new Discount
+        {
+            Title = "Existing Product Discount",
+            Percentage = 15,
+            StartDate = DateTime.UtcNow.AddDays(5),
+            EndDate = DateTime.UtcNow.AddDays(8),
+            ProductId = product.Id
+        };
+
+        context.Discounts.AddRange(discountToUpdate, existingDiscount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Now Overlapping",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(6),
+            EndDate = DateTime.UtcNow.AddDays(9),
+            ProductId = product.Id,
+            CategoryId = null
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(discountToUpdate.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenOverlappingCategoryDiscount()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Networking" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discountToUpdate = new Discount
+        {
+            Title = "Early Category Discount",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            CategoryId = category.Id
+        };
+
+        var existingDiscount = new Discount
+        {
+            Title = "Existing Category Discount",
+            Percentage = 12,
+            StartDate = DateTime.UtcNow.AddDays(4),
+            EndDate = DateTime.UtcNow.AddDays(7),
+            CategoryId = category.Id
+        };
+
+        context.Discounts.AddRange(discountToUpdate, existingDiscount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Overlapping Category Update",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(5),
+            EndDate = DateTime.UtcNow.AddDays(8),
+            ProductId = null,
+            CategoryId = category.Id
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(discountToUpdate.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_ThrowsInvalidOperationException_WhenExistingDiscountWithoutEndDate_ForSameCategory()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Tablets" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discountToUpdate = new Discount
+        {
+            Title = "Target Discount",
+            Percentage = 8,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            CategoryId = category.Id
+        };
+
+        var existingOpenEnded = new Discount
+        {
+            Title = "Open Ended Discount",
+            Percentage = 20,
+            StartDate = DateTime.UtcNow.AddDays(3),
+            EndDate = null,
+            CategoryId = category.Id
+        };
+
+        context.Discounts.AddRange(discountToUpdate, existingOpenEnded);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Invalid Against Open Ended",
+            Percentage = 8,
+            StartDate = DateTime.UtcNow.AddDays(4),
+            EndDate = DateTime.UtcNow.AddDays(6),
+            ProductId = null,
+            CategoryId = category.Id
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateDiscountAsync(discountToUpdate.Id, dto));
+    }
+
+    [Fact]
+    public async Task UpdateDiscountAsync_AllowsProductAndCategoryDiscountsSamePeriod_WhenUpdating()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Cameras" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var product = new Product { Name = "Action Cam", CategoryId = category.Id };
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        var categoryDiscount = new Discount
+        {
+            Title = "Category Discount",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(4),
+            EndDate = DateTime.UtcNow.AddDays(8),
+            CategoryId = category.Id
+        };
+
+        var discountToUpdate = new Discount
+        {
+            Title = "Product Discount",
+            Percentage = 5,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            ProductId = product.Id
+        };
+
+        context.Discounts.AddRange(categoryDiscount, discountToUpdate);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+        var dto = new AdminDiscountUpdateDto
+        {
+            Title = "Updated Product Discount",
+            Percentage = 5,
+            StartDate = DateTime.UtcNow.AddDays(5),
+            EndDate = DateTime.UtcNow.AddDays(7),
+            ProductId = product.Id,
+            CategoryId = null
+        };
+
+        await service.UpdateDiscountAsync(discountToUpdate.Id, dto);
     }
 
 #endregion
