@@ -6,7 +6,7 @@ Student full-stack e-commerce project built for learning and portfolio use.
 
 In progress.
 
-Core product and category flows are implemented, but the application is not finished yet.
+Core product, category and discount flows are implemented, but the application is not finished yet.
 
 ## What the project currently does
 
@@ -14,6 +14,7 @@ Core product and category flows are implemented, but the application is not fini
 - Product filtering by category
 - Admin product management (create, read, update, delete)
 - Category read operations
+- Admin discount management (create, read, update, delete)
 - Backend API with database persistence
 - Unit tests for service layer behavior
 
