@@ -48,11 +48,19 @@ public class ProductService : IProductService
             {
                 Id = p.Id,
                 Name = p.Name,
-                Price = p.Price,
+                OriginalPrice = p.Price,
                 ImagePath = p.ImagePath,
                 CategoryId = p.CategoryId
             })
             .ToListAsync();
+
+        await ApplyDiscountsAsync(
+            items,
+            i => i.Id,
+            i => i.CategoryId,
+            i => i.OriginalPrice,
+            (i, price) => i.DiscountedPrice = price
+        );
 
         return new PagedResultDto<ProductListItemDto>
         {
@@ -65,18 +73,19 @@ public class ProductService : IProductService
 
     public async Task<ProductDetailsDto> GetPublishedProductByIdAsync(int id)
     {
-        return await _context.Products
-            .Where(p => p.IsPublished && p.Id == id)
-            .Select(p => new ProductDetailsDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                ImagePath = p.ImagePath,
-                Description = p.Description,
-                CategoryId = p.CategoryId
-            })
-            .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Product with " + id + " not found.");
+        var product = await _context.Products
+          .FirstOrDefaultAsync(p => p.IsPublished && p.Id == id) ?? throw new KeyNotFoundException("Product with " + id + " not found.");
+        var discounted = await GetDiscountedPriceAsync(product);
+        return new ProductDetailsDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            OriginalPrice = product.Price,
+            DiscountedPrice = discounted,
+            ImagePath = product.ImagePath,
+            Description = product.Description,
+            CategoryId = product.CategoryId
+        };
     }
 
     // ================= ADMIN =================
@@ -104,13 +113,21 @@ public class ProductService : IProductService
             {
                 Id = p.Id,
                 Name = p.Name,
-                Price = p.Price,
+                OriginalPrice = p.Price,
                 ImagePath = p.ImagePath,
                 StockQuantity = p.StockQuantity,
                 IsPublished = p.IsPublished,
                 CategoryId = p.CategoryId
             })
             .ToListAsync();
+
+        await ApplyDiscountsAsync(
+            items,
+            i => i.Id,
+            i => i.CategoryId,
+            i => i.OriginalPrice,
+            (i, price) => i.DiscountedPrice = price
+        );
 
         return new PagedResultDto<AdminProductListItemDto>
         {
@@ -123,20 +140,20 @@ public class ProductService : IProductService
 
     public async Task<AdminProductDetailsDto> GetAdminProductByIdAsync(int id)
     {
-        return await _context.Products
-            .Where(p => p.Id == id)
-            .Select(p => new AdminProductDetailsDto
+        var product = await _context.Products
+          .FirstOrDefaultAsync(p => p.Id == id) ?? throw new KeyNotFoundException("Product with " + id + " not found.");
+        var discounted = await GetDiscountedPriceAsync(product);
+        return new AdminProductDetailsDto
             {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                ImagePath = p.ImagePath,
-                Description = p.Description,
-                StockQuantity = p.StockQuantity,
-                IsPublished = p.IsPublished,
-                CategoryId = p.CategoryId
-            })
-            .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Product with " + id + " not found.");
+                Id = product.Id,
+                Name = product.Name,
+                OriginalPrice = product.Price,
+                ImagePath = product.ImagePath,
+                Description = product.Description,
+                StockQuantity = product.StockQuantity,
+                IsPublished = product.IsPublished,
+                CategoryId = product.CategoryId
+            };
     }
 
     private async Task ValidateCategory(int categoryId)
@@ -206,4 +223,66 @@ public class ProductService : IProductService
             .Select(f => "/images/products/" + Path.GetFileName(f))
             .ToList();
     }
+
+    private async Task<decimal?> GetDiscountedPriceAsync(Product product)
+    {
+        var now = DateTime.UtcNow;
+
+        var discount = await _context.Discounts
+            .Where(d =>
+                (d.ProductId == product.Id || d.CategoryId == product.CategoryId) &&
+                d.StartDate <= now &&
+                (d.EndDate == null || d.EndDate > now)
+            )
+            .OrderByDescending(d => d.Percentage)
+            .FirstOrDefaultAsync();
+
+        if (discount == null)
+            return null;
+
+        return product.Price - (product.Price * discount.Percentage / 100);
+    }
+
+    private async Task ApplyDiscountsAsync<T>(
+    List<T> items,
+    Func<T, int> getProductId,
+    Func<T, int> getCategoryId,
+    Func<T, decimal> getPrice,
+    Action<T, decimal> setDiscountedPrice)
+{
+    var productIds = items.Select(getProductId).ToList();
+    var categoryIds = items.Select(getCategoryId).Distinct().ToList();
+
+    var now = DateTime.UtcNow;
+
+    var discounts = await _context.Discounts
+        .Where(d =>
+            (d.ProductId != null && productIds.Contains(d.ProductId.Value)) ||
+            (d.CategoryId != null && categoryIds.Contains(d.CategoryId.Value))
+        )
+        .Where(d => d.StartDate <= now && (d.EndDate == null || d.EndDate > now))
+        .ToListAsync();
+
+    foreach (var item in items)
+    {
+        var productDiscount = discounts
+            .Where(d => d.ProductId == getProductId(item));
+
+        var categoryDiscount = discounts
+            .Where(d => d.CategoryId == getCategoryId(item));
+
+        var bestDiscount = productDiscount
+            .Concat(categoryDiscount)
+            .OrderByDescending(d => d.Percentage)
+            .FirstOrDefault();
+
+        if (bestDiscount != null)
+        {
+            var price = getPrice(item);
+            var discounted = price - (price * bestDiscount.Percentage / 100);
+
+            setDiscountedPrice(item, discounted);
+        }
+    }
+}
 }

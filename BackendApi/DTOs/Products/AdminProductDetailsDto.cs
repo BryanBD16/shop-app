@@ -6,7 +6,9 @@ namespace BackendApi.DTOs
 
         public string Name { get; set; } = string.Empty;
 
-        public decimal Price { get; set; }
+        public decimal OriginalPrice { get; set; }
+
+        public decimal? DiscountedPrice { get; set; }
 
         public string ImagePath { get; set; } = string.Empty;
 

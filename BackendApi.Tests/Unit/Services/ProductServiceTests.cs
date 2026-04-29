@@ -197,9 +197,38 @@ public class ProductServiceTests
         var item = result.Items.First();
 
         Assert.Equal("Test", item.Name);
-        Assert.Equal(99.99m, item.Price);
+        Assert.Equal(99.99m, item.OriginalPrice);
+        Assert.Null(item.DiscountedPrice);
         Assert.Equal("image.jpg", item.ImagePath);
         Assert.Equal(category.Id, item.CategoryId);
+    }
+
+    [Fact]
+    public async Task GetPublishedProductsAsync_SetsDiscountedPriceToNull_WhenNoDiscountExists()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        context.Products.Add(new Product
+        {
+            Name = "No Discount Product",
+            Price = 42m,
+            IsPublished = true,
+            CategoryId = category.Id
+        });
+
+        await context.SaveChangesAsync();
+
+        var service = new ProductService(context);
+
+        var result = await service.GetPublishedProductsAsync(1, "");
+
+        var item = result.Items.Single();
+
+        Assert.Equal(42m, item.OriginalPrice);
+        Assert.Null(item.DiscountedPrice);
     }
 
     [Fact]
@@ -353,7 +382,8 @@ public class ProductServiceTests
 
         Assert.NotNull(result);
         Assert.Equal("Test", result.Name);
-        Assert.Equal(99.99m, result.Price);
+        Assert.Equal(99.99m, result.OriginalPrice);
+        Assert.Null(result.DiscountedPrice);
         Assert.Equal("image.png", result.ImagePath);
         Assert.Equal("Full description", result.Description);
         Assert.Equal(category.Id, result.CategoryId);
@@ -553,7 +583,8 @@ public class ProductServiceTests
         var item = result.Items.First();
 
         Assert.Equal("Test", item.Name);
-        Assert.Equal(99.99m, item.Price);
+        Assert.Equal(99.99m, item.OriginalPrice);
+        Assert.Null(item.DiscountedPrice);
         Assert.Equal("image.png", item.ImagePath);
         Assert.Equal(5, item.StockQuantity);
         Assert.Equal(true, item.IsPublished);
@@ -711,12 +742,61 @@ public class ProductServiceTests
 
         Assert.NotNull(result);
         Assert.Equal("Test", result.Name);
-        Assert.Equal(99.99m, result.Price);
+        Assert.Equal(99.99m, result.OriginalPrice);
+        Assert.Null(result.DiscountedPrice);
         Assert.Equal("image.png", result.ImagePath);
         Assert.Equal("Full description", result.Description);
         Assert.Equal(5, result.StockQuantity);
         Assert.Equal(true, result.IsPublished);
         Assert.Equal(category.Id, result.CategoryId);
+    }
+
+    [Fact]
+    public async Task GetPublishedProductByIdAsync_UsesBestDiscount_WhenProductAndCategoryDiscountsExist()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var product = new Product
+        {
+            Name = "Best Discount Product",
+            Price = 100m,
+            Description = "Discount selection test",
+            IsPublished = true,
+            CategoryId = category.Id
+        };
+
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        context.Discounts.AddRange(
+            new Discount
+            {
+                Title = "Product 15%",
+                Percentage = 15,
+                StartDate = DateTime.UtcNow.AddHours(-1),
+                EndDate = DateTime.UtcNow.AddHours(1),
+                ProductId = product.Id
+            },
+            new Discount
+            {
+                Title = "Category 30%",
+                Percentage = 30,
+                StartDate = DateTime.UtcNow.AddHours(-1),
+                EndDate = DateTime.UtcNow.AddHours(1),
+                CategoryId = category.Id
+            }
+        );
+        await context.SaveChangesAsync();
+
+        var service = new ProductService(context);
+
+        var result = await service.GetPublishedProductByIdAsync(product.Id);
+
+        Assert.Equal(100m, result.OriginalPrice);
+        Assert.Equal(70m, result.DiscountedPrice);
     }
 
     [Fact]
