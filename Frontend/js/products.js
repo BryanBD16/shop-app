@@ -11,6 +11,17 @@ const nextBtn = document.getElementById('nextBtn');
 const pageInfo = document.getElementById('pageInfo');
 const categorySelect = document.getElementById('categorySelect');
 
+function renderPriceHtml(originalPrice, discountedPrice) {
+    if (discountedPrice !== null && discountedPrice !== undefined) {
+        return `
+            <div class="fw-bold text-danger">$${discountedPrice.toFixed(2)}</div>
+            <div class="small text-muted text-decoration-line-through">$${originalPrice.toFixed(2)}</div>
+        `;
+    }
+
+    return `$${originalPrice.toFixed(2)}`;
+}
+
 function fetchProducts() {
     let url = `http://localhost:5000/api/products?page=${currentPage}&search=${encodeURIComponent(currentSearch)}`;
 
@@ -39,7 +50,7 @@ function fetchProducts() {
                         <div class="card-body d-flex flex-column">
                             <a href="product-detail.html?id=${p.id}" class="text-decoration-none text-dark">
                                 <h5 class="card-title">${p.name}</h5>
-                                <p class="card-text">$${p.price.toFixed(2)}</p>
+                                <div class="card-text">${renderPriceHtml(p.originalPrice ?? p.price, p.discountedPrice)}</div>
                             </a>
                             <button class="btn btn-orange mt-auto">
                                 Add to Cart

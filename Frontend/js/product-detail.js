@@ -9,6 +9,17 @@ const productDescription = document.getElementById('productDescription');
 const addToCartBtn = document.getElementById('addToCart');
 const productQuantity = document.getElementById('productQuantity');
 
+function renderPriceHtml(originalPrice, discountedPrice) {
+    if (discountedPrice !== null && discountedPrice !== undefined) {
+        return `
+            <div class="fw-bold text-danger">$${discountedPrice.toFixed(2)}</div>
+            <div class="small text-muted text-decoration-line-through">$${originalPrice.toFixed(2)}</div>
+        `;
+    }
+
+    return `$${originalPrice.toFixed(2)}`;
+}
+
 if (!productId) {
     productName.textContent = "Product not found";
 } else {
@@ -16,7 +27,7 @@ if (!productId) {
         .then(res => res.json())
         .then(p => {
             productName.textContent = p.name;
-            productPrice.textContent = `$${p.price.toFixed(2)}`;
+            productPrice.innerHTML = renderPriceHtml(p.originalPrice ?? p.price, p.discountedPrice);
             productImage.src = `http://localhost:5000${p.imagePath}`;
             productImage.alt = p.name;
             productDescription.textContent = p.description;
