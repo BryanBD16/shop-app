@@ -277,4 +277,13 @@ public class DiscountService : IDiscountService
         }
         return ;
     }
+
+    public async Task DeleteDiscountAsync(int id)
+    {
+        var discount = await GetDiscountOrThrowAsync(id);
+        if(discount.StartDate < DateTime.UtcNow)
+            throw new InvalidOperationException("Cannot delete a discount that has already started");
+        _context.Discounts.Remove(discount);
+        await _context.SaveChangesAsync();
+    }
 }

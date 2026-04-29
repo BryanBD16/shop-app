@@ -1064,4 +1064,70 @@ public class DiscountServiceTests
 
 #endregion
 
+#region DeleteDiscountAsync
+
+    [Fact]
+    public async Task DeleteDiscountAsync_DeletesDiscount_WhenDiscountHasNotStartedYet()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Electronics" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Upcoming Sale",
+            Percentage = 10,
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(5),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+
+        await service.DeleteDiscountAsync(discount.Id);
+
+        var deletedDiscount = await context.Discounts.FindAsync(discount.Id);
+
+        Assert.Null(deletedDiscount);
+    }
+
+    [Fact]
+    public async Task DeleteDiscountAsync_ThrowsInvalidOperationException_WhenDiscountHasStarted()
+    {
+        using var context = CreateDbContext();
+        var category = new Category { Name = "Books" };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var discount = new Discount
+        {
+            Title = "Active Sale",
+            Percentage = 15,
+            StartDate = DateTime.UtcNow.AddDays(-1),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            CategoryId = category.Id
+        };
+        context.Discounts.Add(discount);
+        await context.SaveChangesAsync();
+
+        var service = new DiscountService(context);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteDiscountAsync(discount.Id));
+    }
+
+    [Fact]
+    public async Task DeleteDiscountAsync_ThrowsKeyNotFoundException_WhenIdDoesNotExist()
+    {
+        using var context = CreateDbContext();
+
+        var service = new DiscountService(context);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.DeleteDiscountAsync(999));
+    }
+
+#endregion
+
 }

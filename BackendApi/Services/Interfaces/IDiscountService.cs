@@ -12,4 +12,5 @@ public interface IDiscountService
     Task UpdateDiscountAsync(int id, AdminDiscountUpdateDto dto);
     Task<List<DiscountDto>> GetDiscountsAsync(DateTime? startDate = null, DateTime? endDate = null);
     Task<DiscountDto> GetDiscountByIdAsync(int id);
+    Task DeleteDiscountAsync(int id);
 }

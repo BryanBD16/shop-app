@@ -49,4 +49,11 @@ public class DiscountsController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteDiscount(int id)
+    {
+        await _discountService.DeleteDiscountAsync(id);
+        return NoContent();
+    }
+
 }
