@@ -13,13 +13,13 @@ export const routes: Routes = [
         .then(m => m.ProductListComponent)
   },
   {
-    path: 'discounts',
+    path: 'admin/discounts',
     loadComponent: () =>
       import('./features/discounts/pages/discount-list/discount-list.component')
         .then(m => m.DiscountListComponent)
   },
   {
-    path: 'categories',
+    path: 'admin/categories',
     loadComponent: () =>
       import('./features/categories/pages/category-list/category-list.component')
         .then(m => m.CategoryListComponent)

@@ -1,4 +1,20 @@
-<nav class="navbar">
+<header class="navbar">
+  <span class="logo" routerLink="/products">MyShop</span>
+
+  <span class="spacer"></span>
+
   <a routerLink="/products">Products</a>
-  <a routerLink="/discounts">Discounts</a>
-</nav>
+
+  <div class="dropdown">
+    <button class="dropbtn">Admin</button>
+
+    <div class="dropdown-content">
+      <a routerLink="/admin/products">Products</a>
+      <a routerLink="/admin/products/create">Create Product</a>
+      <a routerLink="/admin/discounts">Discounts</a>
+      <a routerLink="/admin/discounts/create">Create Discount</a>
+      <a routerLink="/admin/categories">Categories</a>
+      <a routerLink="/admin/categories/create">Create Category</a>
+    </div>
+  </div>
+</header>
