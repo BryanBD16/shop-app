@@ -1,0 +1,23 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { DiscountEditComponent } from './discount-edit.component';
+
+describe('DiscountEditComponent', () => {
+  let component: DiscountEditComponent;
+  let fixture: ComponentFixture<DiscountEditComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [DiscountEditComponent]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(DiscountEditComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
