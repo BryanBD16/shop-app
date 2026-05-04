@@ -2,12 +2,27 @@
 @use '@angular/material' as mat;
 
 html{
-  color-scheme: light;
-  @include mat.theme((color: theme.$primary-palette));
-
   @media (prefers-contrast: more) {
     @include theme.high-contrast-overrides('light');
   }
+}
+
+/* LIGHT THEME */
+html.light {
+  color-scheme: light;
+  @include mat.theme((
+    color: theme.$primary-palette,
+    theme-type: light
+  ));
+}
+
+/* DARK THEME */
+html.dark {
+  color-scheme: dark;
+  @include mat.theme((
+    color: theme.$primary-palette,
+    theme-type: dark
+  ));
 }
 
 .tertiary {

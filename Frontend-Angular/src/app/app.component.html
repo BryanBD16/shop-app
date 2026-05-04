@@ -1,33 +1,43 @@
 <mat-sidenav-container class="sidenav-container">
+  <!-- Main Nav -->
   <mat-sidenav #mainnav mode="side" class="sidenav">
+    <div class="section-title text-primary">User ...</div>
+    <mat-divider></mat-divider>
+    <mat-nav-list>
+      <!-- Products -->
+      <div class="section-group text-secondary">Products</div>
+      <a mat-list-item routerLink="/products" routerLinkActive="active">
+        Products
+      </a>
+      <a mat-list-item routerLink="/admin/products">List</a>
+      <a mat-list-item routerLink="/admin/products/create">Create</a>
 
-  <div class="section-title text-primary">User ...</div>
+      <!-- Discounts -->
+      <div class="section-group text-secondary">Discounts</div>
+      <a mat-list-item routerLink="/admin/discounts">List</a>
+      <a mat-list-item routerLink="/admin/discounts/create">Create</a>
 
-  <mat-divider></mat-divider>
+      <!-- Categories -->
+      <div class="section-group text-secondary">Categories</div>
+      <a mat-list-item routerLink="/admin/categories">List</a>
+      <a mat-list-item routerLink="/admin/categories/create">Create</a>
 
-  <mat-nav-list>
+    </mat-nav-list>
+  </mat-sidenav>
+  <!-- Settings -->
+  <mat-sidenav #setting mode="side" position="end" class="sidenav">
+    <div class="section-title text-primary">Settings</div>
+    <mat-divider></mat-divider>
+    <mat-radio-group
+      [value]="themeService.mode()"
+      (change)="themeService.setMode($event.value)"
+    >
+      <div class="section-group text-secondary">Theme</div>
 
-    <!-- Products -->
-    <div class="section-group text-secondary">Products</div>
-    <a mat-list-item routerLink="/products" routerLinkActive="active">
-      Products
-    </a>
-    <a mat-list-item routerLink="/admin/products">List</a>
-    <a mat-list-item routerLink="/admin/products/create">Create</a>
-
-    <!-- Discounts -->
-    <div class="section-group text-secondary">Discounts</div>
-    <a mat-list-item routerLink="/admin/discounts">List</a>
-    <a mat-list-item routerLink="/admin/discounts/create">Create</a>
-
-    <!-- Categories -->
-    <div class="section-group text-secondary">Categories</div>
-    <a mat-list-item routerLink="/admin/categories">List</a>
-    <a mat-list-item routerLink="/admin/categories/create">Create</a>
-
-  </mat-nav-list>
-</mat-sidenav>
-  <mat-sidenav #setting mode="side" position="end">End content</mat-sidenav>
+      <mat-radio-button value="light">Light</mat-radio-button>
+      <mat-radio-button value="dark">Dark</mat-radio-button>
+    </mat-radio-group>
+  </mat-sidenav>
   <mat-toolbar>
     <button mat-icon-button (click)="mainnav.toggle()">
       <mat-icon>menu</mat-icon>
