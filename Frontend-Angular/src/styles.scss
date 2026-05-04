@@ -1,8 +1,45 @@
-@use './styles/colors.scss' as colors;
+@use 'theme-colors' as theme;
+@use '@angular/material' as mat;
+
+html{
+  color-scheme: light;
+  @include mat.theme((color: theme.$primary-palette));
+
+  @media (prefers-contrast: more) {
+    @include theme.high-contrast-overrides('light');
+  }
+}
+
+.tertiary {
+  @include mat.theme((color: theme.$tertiary-palette));
+}
+
+.secondary {
+  @include mat.theme((color: theme.$secondary-palette));
+}
+
+.error {
+  @include mat.theme((color: theme.$error-palette));
+}
+
+.text-error{
+  color : var(--mat-sys-error);
+}
+
+.text-primary{
+  color : var(--mat-sys-primary);
+}
+
+.text-secondary{
+  color : var(--mat-sys-secondary);
+}
+
+.text-tertiary{
+  color : var(--mat-sys-tertiary);
+}
 
 html, body {
   height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: colors.$white;
 }
+
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

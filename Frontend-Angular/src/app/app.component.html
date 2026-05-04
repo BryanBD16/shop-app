@@ -1,9 +1,44 @@
-<div class="layout">
-  <app-navbar></app-navbar>
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #mainnav mode="side" class="sidenav">
 
+  <div class="section-title text-primary">User ...</div>
+
+  <mat-divider></mat-divider>
+
+  <mat-nav-list>
+
+    <!-- Products -->
+    <div class="section-group text-secondary">Products</div>
+    <a mat-list-item routerLink="/products" routerLinkActive="active">
+      Products
+    </a>
+    <a mat-list-item routerLink="/admin/products">List</a>
+    <a mat-list-item routerLink="/admin/products/create">Create</a>
+
+    <!-- Discounts -->
+    <div class="section-group text-secondary">Discounts</div>
+    <a mat-list-item routerLink="/admin/discounts">List</a>
+    <a mat-list-item routerLink="/admin/discounts/create">Create</a>
+
+    <!-- Categories -->
+    <div class="section-group text-secondary">Categories</div>
+    <a mat-list-item routerLink="/admin/categories">List</a>
+    <a mat-list-item routerLink="/admin/categories/create">Create</a>
+
+  </mat-nav-list>
+</mat-sidenav>
+  <mat-sidenav #setting mode="side" position="end">End content</mat-sidenav>
+  <mat-toolbar>
+    <button mat-icon-button (click)="mainnav.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span class="app-title text-primary">Shop App</span>
+    <span class="spacer"></span>
+    <button mat-icon-button (click)="setting.toggle()">
+      <mat-icon>settings</mat-icon>
+    </button>
+  </mat-toolbar>
   <main>
     <router-outlet></router-outlet>
   </main>
-
-  <app-footer></app-footer>
-</div>
+</mat-sidenav-container>
