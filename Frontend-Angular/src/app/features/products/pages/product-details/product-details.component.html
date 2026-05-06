@@ -1,1 +1,72 @@
-<p>product-details works!</p>
+<div class="product-page" *ngIf="!isLoading && product; else loadingOrError">
+
+  <!-- TITLE -->
+  <h1 class="product-title">
+    {{ product.name }}
+  </h1>
+
+  <!-- MAIN SECTION -->
+  <div class="product-main">
+
+    <!-- IMAGE -->
+    <div class="image-section">
+      <img
+        [src]="'http://localhost:5000' + product.imagePath"
+        [alt]="product.name"
+      />
+    </div>
+
+    <!-- INFO -->
+    <div class="info-section">
+
+      <!-- PRICE -->
+      <div class="price-section">
+
+        <ng-container *ngIf="product.discountedPrice; else normalPrice">
+
+          <div class="discount-price">
+            {{ product.discountedPrice | currency }}
+          </div>
+
+          <div class="original-price">
+            {{ product.originalPrice | currency }}
+          </div>
+
+        </ng-container>
+
+        <ng-template #normalPrice>
+          <div class="normal-price">
+            {{ product.originalPrice | currency }}
+          </div>
+        </ng-template>
+
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="actions">
+        <button mat-flat-button color="primary">
+          Add to Cart
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <section class="description-section">
+    <h2>Description</h2>
+    <p>{{ product.description }}</p>
+  </section>
+
+</div>
+
+<!-- LOADING / ERROR -->
+<ng-template #loadingOrError>
+  <div class="status" *ngIf="isLoading">
+    Loading product...
+  </div>
+
+  <div class="status text-error" *ngIf="error">
+    {{ error }}
+  </div>
+</ng-template>
