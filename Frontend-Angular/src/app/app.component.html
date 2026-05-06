@@ -65,4 +65,7 @@
 
       </mat-toolbar>
   </div>
+  
 </mat-sidenav-container>
+<!-- Loading Overlay -->
+<app-loading *ngIf="loadingService.loading$ | async"></app-loading>

@@ -1,16 +1,10 @@
-<!-- LOADING -->
-<app-loading
-  *ngIf="isLoading"
-  message="Loading product..."
-></app-loading>
-
 <!-- ERROR -->
 <div *ngIf="error" class="status text-error">
   {{ error }}
 </div>
 
 <!-- CONTENT -->
-<div *ngIf="!isLoading && product" class="product-page">
+<div *ngIf="product" class="product-page">
 
   <!-- TITLE -->
   <h1 class="product-title">

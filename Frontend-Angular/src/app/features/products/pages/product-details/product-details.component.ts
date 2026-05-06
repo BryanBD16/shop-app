@@ -19,7 +19,6 @@ export class ProductDetailsComponent implements OnInit {
   private productService = inject(ProductService);
 
   product: ProductDetailsDto | null = null;
-  isLoading = true;
   error: string | null = null;
 
   ngOnInit(): void {
@@ -28,7 +27,6 @@ export class ProductDetailsComponent implements OnInit {
 
       if (!id) {
         this.error = 'Invalid product id';
-        this.isLoading = false;
         return;
       }
 
@@ -37,13 +35,11 @@ export class ProductDetailsComponent implements OnInit {
   }
 
   private loadProduct(id: number): void {
-    this.isLoading = true;
     this.error = null;
 
     this.productService.getProduct(id).subscribe({
       next: (data) => {
         this.product = data;
-        this.isLoading = false;
       },
       error: (err) => {
         console.error(err);
@@ -54,7 +50,6 @@ export class ProductDetailsComponent implements OnInit {
           this.error = 'Unexpected error occurred';
         }
 
-        this.isLoading = false;
       }
     });
   }

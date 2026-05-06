@@ -9,16 +9,19 @@ import { MatDivider } from '@angular/material/list';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import {ThemeService} from './core/services/theme.service';
+import { LoadingComponent } from './shared/components/loading/loading.component';
+import { CommonModule } from '@angular/common';
+import { LoadingService } from './core/services/loading.service';
 
 @Component({
   standalone: true,
   selector: 'app-root',
-  imports: [RouterOutlet,RouterModule ,MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatNavList, MatDivider, MatListModule, MatRadioModule],
+  imports: [RouterOutlet, RouterModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatNavList, MatDivider, MatListModule, MatRadioModule, LoadingComponent, CommonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
   title = 'Frontend-Angular';
 
-  constructor(public themeService: ThemeService) {}
+  constructor(public themeService: ThemeService, public loadingService: LoadingService) {}
 }

@@ -22,8 +22,6 @@ import { LoadingComponent } from '../../../../shared/components/loading/loading.
   styleUrl: './product-list.component.scss'
 })
 export class ProductListComponent implements OnInit{
-  isLoading = false;
-  isLoadingCategories = false;
   currentPage = 1;
   pageSize = 12;
   currentSearch = '';
@@ -51,7 +49,6 @@ export class ProductListComponent implements OnInit{
   }
 
   fetchProducts() {
-    this.isLoading = true;
 
     this.productService
       .getProducts(this.currentPage, this.currentSearch, this.currentCategoryId)
@@ -60,24 +57,19 @@ export class ProductListComponent implements OnInit{
           this.products = data.items;
           this.totalPages = data.totalPages;
           this.currentPage = data.currentPage;
-          this.isLoading = false;
         },
         error: () => {
-          this.isLoading = false;
         }
       });
   }
 
   fetchCategories() {
-    this.isLoadingCategories = true;
 
     this.categoryService.getCategories().subscribe({
       next: (data) => {
         this.categories = data;
-        this.isLoadingCategories = false;
       },
       error: () => {
-        this.isLoadingCategories = false;
       }
     });
   }
