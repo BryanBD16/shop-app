@@ -67,7 +67,7 @@ public class ProductService : IProductService
             Items = items,
             CurrentPage = page,
             TotalItems = totalItems,
-            TotalPages = (int)Math.Ceiling(totalItems / (double)PageSize)
+            TotalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)PageSize))
         };
     }
 

@@ -1,0 +1,43 @@
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(338px, 1fr));
+  gap: 16px;
+}
+
+.fw-bold {
+  font-weight: 700;
+}
+
+.text-danger {
+  color: var(--mat-sys-error);
+}
+
+.text-muted {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.text-decoration-line-through {
+  text-decoration: line-through;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}

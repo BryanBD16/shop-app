@@ -38,17 +38,31 @@
       <mat-radio-button value="dark">Dark</mat-radio-button>
     </mat-radio-group>
   </mat-sidenav>
-  <mat-toolbar>
-    <button mat-icon-button (click)="mainnav.toggle()">
-      <mat-icon>menu</mat-icon>
-    </button>
-    <span class="app-title text-primary">Shop App</span>
-    <span class="spacer"></span>
-    <button mat-icon-button (click)="setting.toggle()">
-      <mat-icon>settings</mat-icon>
-    </button>
-  </mat-toolbar>
-  <main>
-    <router-outlet></router-outlet>
-  </main>
+  <div class="content-layout">
+    <!-- Header Toolbar -->
+    <mat-toolbar class ="header-toolbar">
+      <button mat-icon-button (click)="mainnav.toggle()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="app-title">Shop App</span>
+      <span class="spacer"></span>
+      <button mat-icon-button (click)="setting.toggle()">
+        <mat-icon>settings</mat-icon>
+      </button>
+    </mat-toolbar>
+    <!-- Main -->
+    <main>
+      <router-outlet></router-outlet>
+    </main>
+    <!-- FOOTER TOOLBAR -->
+      <mat-toolbar>
+
+        <span class="spacer"></span>
+
+        <span>© 2026 Shop App</span>
+
+        <span class="spacer"></span>
+
+      </mat-toolbar>
+  </div>
 </mat-sidenav-container>

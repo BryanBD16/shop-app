@@ -148,7 +148,7 @@ public class ProductServiceTests
 
         Assert.Empty(result.Items);
         Assert.Equal(0, result.TotalItems);
-        Assert.Equal(0, result.TotalPages);
+        Assert.Equal(1, result.TotalPages);
     }
 
     [Fact]

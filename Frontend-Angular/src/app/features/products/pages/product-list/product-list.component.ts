@@ -3,11 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {MatButtonModule} from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatCardModule } from '@angular/material/card';
+import { Router } from '@angular/router';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, CommonModule, MatButtonModule],
+  imports: [FormsModule, CommonModule, MatButtonModule, MatCardModule, MatCard, MatInputModule, MatSelectModule, MatFormFieldModule],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
 })
@@ -22,7 +28,11 @@ currentPage = 1;
 
   totalPages = 1;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
+
+  goToProduct(id: number) {
+    this.router.navigate(['/products', id]);
+  }
 
   ngOnInit() {
     this.fetchCategories();

@@ -1,13 +1,29 @@
 main {
   flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 95%;
+}
+
+.content-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .sidenav-container {
-  position: absolute;
+  height: 100vh;
+}
+
+
+app-root, mat-sidenav-container {
+  height: 100%;
+}
+
+.header-toolbar {
+  position: sticky;
   top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  z-index: 1000;
 }
 
 .spacer {
@@ -34,4 +50,26 @@ main {
 .app-title {
   font-size: 1.5rem;
   font-weight: bold;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+mat-toolbar {
+  background: var(--mat-sys-surface-container);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+mat-sidenav {
+  background: var(--mat-sys-surface-container);
+  border-radius: 0;
+}
+
+mat-sidenav,
+.mat-drawer,
+.mat-drawer-inner-container {
+  border-radius: 0 !important;
 }
