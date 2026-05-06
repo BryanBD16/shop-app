@@ -9,6 +9,8 @@ import { Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { ProductService } from '../../../../core/services/product.service';
+import { CategoryService } from '../../../../core/services/category.service';
 
 @Component({
   selector: 'app-product-list',
@@ -28,7 +30,11 @@ currentPage = 1;
 
   totalPages = 1;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private router: Router
+  ) {}
 
   goToProduct(id: number) {
     this.router.navigate(['/products', id]);
@@ -40,13 +46,9 @@ currentPage = 1;
   }
 
   fetchProducts() {
-    let url = `http://localhost:5000/api/products?page=${this.currentPage}&search=${this.currentSearch}`;
-
-    if (this.currentCategoryId) {
-      url += `&categoryId=${this.currentCategoryId}`;
-    }
-
-    this.http.get<any>(url).subscribe(data => {
+    this.productService
+    .getProducts(this.currentPage, this.currentSearch, this.currentCategoryId)
+    .subscribe(data => {
       this.products = data.items;
       this.totalPages = data.totalPages;
       this.currentPage = data.currentPage;
@@ -54,8 +56,9 @@ currentPage = 1;
   }
 
   fetchCategories() {
-    this.http.get<any[]>('http://localhost:5000/api/categories')
-      .subscribe(data => this.categories = data);
+    this.categoryService.getCategories().subscribe(data => {
+      this.categories = data;
+    })
   }
 
   onSearchChange() {

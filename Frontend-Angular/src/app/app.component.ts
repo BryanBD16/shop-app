@@ -8,7 +8,7 @@ import { MatNavList } from '@angular/material/list';
 import { MatDivider } from '@angular/material/list';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
-import {ThemeService} from './services/theme.service';
+import {ThemeService} from './core/services/theme.service';
 
 @Component({
   standalone: true,
