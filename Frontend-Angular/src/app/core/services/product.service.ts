@@ -31,11 +31,11 @@ export class ProductService {
       url += `&categoryId=${categoryId}`;
     }
 
-    return this.http.get<PagedResultDto<ProductListItemDto>>(url);
+    return this.http.get<PagedResultDto<ProductListItemDto>>(url); 
   }
 
   getProduct(id: number): Observable<ProductDetailsDto> {
-    return this.http.get<ProductDetailsDto>(`${this.apiUrl}/${id}`);
+    return this.http.get<ProductDetailsDto>(`${this.apiUrl}/${id}`); 
   }
 
   getAdminProducts(

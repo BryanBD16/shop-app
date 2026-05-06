@@ -1,4 +1,16 @@
-<div class="product-page" *ngIf="!isLoading && product; else loadingOrError">
+<!-- LOADING -->
+<app-loading
+  *ngIf="isLoading"
+  message="Loading product..."
+></app-loading>
+
+<!-- ERROR -->
+<div *ngIf="error" class="status text-error">
+  {{ error }}
+</div>
+
+<!-- CONTENT -->
+<div *ngIf="!isLoading && product" class="product-page">
 
   <!-- TITLE -->
   <h1 class="product-title">
@@ -19,7 +31,6 @@
     <!-- INFO -->
     <div class="info-section">
 
-      <!-- PRICE -->
       <div class="price-section">
 
         <ng-container *ngIf="product.discountedPrice; else normalPrice">
@@ -42,7 +53,6 @@
 
       </div>
 
-      <!-- ACTIONS -->
       <div class="actions">
         <button mat-flat-button color="primary">
           Add to Cart
@@ -59,14 +69,3 @@
   </section>
 
 </div>
-
-<!-- LOADING / ERROR -->
-<ng-template #loadingOrError>
-  <div class="status" *ngIf="isLoading">
-    Loading product...
-  </div>
-
-  <div class="status text-error" *ngIf="error">
-    {{ error }}
-  </div>
-</ng-template>

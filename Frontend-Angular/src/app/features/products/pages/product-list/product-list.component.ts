@@ -11,16 +11,20 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { ProductService } from '../../../../core/services/product.service';
 import { CategoryService } from '../../../../core/services/category.service';
+import { LoadingComponent } from '../../../../shared/components/loading/loading.component';
+
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, CommonModule, MatButtonModule, MatCardModule, MatCard, MatInputModule, MatSelectModule, MatFormFieldModule],
+  imports: [FormsModule, CommonModule, MatButtonModule, MatCardModule, MatCard, MatInputModule, MatSelectModule, MatFormFieldModule, LoadingComponent],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
 })
 export class ProductListComponent implements OnInit{
-currentPage = 1;
+  isLoading = false;
+  isLoadingCategories = false;
+  currentPage = 1;
   pageSize = 12;
   currentSearch = '';
   currentCategoryId = '';
@@ -29,6 +33,7 @@ currentPage = 1;
   categories: any[] = [];
 
   totalPages = 1;
+
 
   constructor(
     private productService: ProductService,
@@ -46,19 +51,35 @@ currentPage = 1;
   }
 
   fetchProducts() {
+    this.isLoading = true;
+
     this.productService
-    .getProducts(this.currentPage, this.currentSearch, this.currentCategoryId)
-    .subscribe(data => {
-      this.products = data.items;
-      this.totalPages = data.totalPages;
-      this.currentPage = data.currentPage;
-    });
+      .getProducts(this.currentPage, this.currentSearch, this.currentCategoryId)
+      .subscribe({
+        next: (data) => {
+          this.products = data.items;
+          this.totalPages = data.totalPages;
+          this.currentPage = data.currentPage;
+          this.isLoading = false;
+        },
+        error: () => {
+          this.isLoading = false;
+        }
+      });
   }
 
   fetchCategories() {
-    this.categoryService.getCategories().subscribe(data => {
-      this.categories = data;
-    })
+    this.isLoadingCategories = true;
+
+    this.categoryService.getCategories().subscribe({
+      next: (data) => {
+        this.categories = data;
+        this.isLoadingCategories = false;
+      },
+      error: () => {
+        this.isLoadingCategories = false;
+      }
+    });
   }
 
   onSearchChange() {

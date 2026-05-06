@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../../core/services/product.service';
 import { ProductDetailsDto } from '../../../../shared/models/products/product-details.dto.model';
 import { MatButtonModule } from '@angular/material/button';
+import { LoadingComponent } from '../../../../shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatButtonModule],
+  imports: [CommonModule, RouterModule, MatButtonModule, LoadingComponent],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.scss'
 })

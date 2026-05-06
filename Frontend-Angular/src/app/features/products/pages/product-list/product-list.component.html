@@ -1,78 +1,86 @@
-<div class="container">
-  <h1 class="title">Products</h1>
+<app-loading
+  *ngIf="isLoading"
+  message="Loading products..."
+></app-loading>
 
-  <!-- Filters -->
-  <div class="filters">
-    <!-- search -->
-    <mat-form-field appearance="outline">
-      <mat-label>Search products</mat-label>
-      <input matInput [(ngModel)]="currentSearch" (input)="onSearchChange()" />
-    </mat-form-field>
+<div *ngIf="!isLoading">
+  <div class="container">
+    <h1 class="title">Products</h1>
 
-    <!-- category -->
-    <mat-form-field appearance="outline">
-      <mat-label>Category</mat-label>
-      <mat-select [(ngModel)]="currentCategoryId" (selectionChange)="onCategoryChange()">
-        <mat-option value="">All categories</mat-option>
+    <!-- Filters -->
+    <div class="filters">
+      <!-- search -->
+      <mat-form-field appearance="outline">
+        <mat-label>Search products</mat-label>
+        <input matInput [(ngModel)]="currentSearch" (input)="onSearchChange()" />
+      </mat-form-field>
 
-        <mat-option *ngFor="let c of categories" [value]="c.id">
-          {{ c.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
-  
-<br>
-  <!-- Products -->
-<div class="product-grid">
-    <mat-card class="product-card clickable" *ngFor="let p of products" (click)="goToProduct(p.id)">
-      <img
-        mat-card-image
-        [src]="'http://localhost:5000' + p.imagePath"
-      />
+      <!-- category -->
+      <mat-form-field appearance="outline">
+        <mat-label>Category</mat-label>
+        <mat-select [(ngModel)]="currentCategoryId" (selectionChange)="onCategoryChange()" [disabled]="isLoadingCategories">
+          <mat-option value="">All categories</mat-option>
 
-      <mat-card-content>
-        <h3>{{ p.name }}</h3>
+          <mat-option *ngFor="let c of categories" [value]="c.id">
+            {{ c.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    
+  <br>
+    <!-- Products -->
+  <div class="product-grid">
+      <mat-card class="product-card clickable" *ngFor="let p of products" (click)="goToProduct(p.id)">
+        <img
+          mat-card-image
+          [src]="'http://localhost:5000' + p.imagePath"
+        />
 
-        <div *ngIf="p.discountedPrice; else originalPrice">
-          <span class="text-danger fw-bold">
-            {{ p.discountedPrice | currency }}
-          </span>
-          <span class="text-muted text-decoration-line-through">
-            {{ p.originalPrice | currency }}
-          </span>
-        </div>
+        <mat-card-content>
+          <h3>{{ p.name }}</h3>
 
-        <ng-template #originalPrice>
-          <div>
-            {{ p.originalPrice | currency }}
+          <div *ngIf="p.discountedPrice; else originalPrice">
+            <span class="text-danger fw-bold">
+              {{ p.discountedPrice | currency }}
+            </span>
+            <span class="text-muted text-decoration-line-through">
+              {{ p.originalPrice | currency }}
+            </span>
           </div>
-        </ng-template>
 
-      </mat-card-content>
+          <ng-template #originalPrice>
+            <div>
+              {{ p.originalPrice | currency }}
+            </div>
+          </ng-template>
 
-      <mat-card-actions>
-        <button mat-flat-button color="primary">
-          Add to Cart
-        </button>
-      </mat-card-actions>
-    </mat-card>
-</div>
-<div *ngIf="products.length === 0" class="text-error">
-  No products match your filters.
-</div>
-<br>
+        </mat-card-content>
 
-  <!-- Pagination -->
-  <div class="text-center mt-3">
-    <button (click)="prevPage()" [disabled]="currentPage === 1" mat-button class="secondary">
-      Previous
-    </button>
+        <mat-card-actions>
+          <button mat-flat-button color="primary">
+            Add to Cart
+          </button>
+        </mat-card-actions>
+      </mat-card>
+  </div>
+  <div *ngIf="products.length === 0" class="text-error">
+    No products match your filters.
+  </div>
+  <br>
 
-    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <!-- Pagination -->
+    <div class="text-center mt-3">
+      <button (click)="prevPage()" [disabled]="currentPage === 1" mat-button class="secondary">
+        Previous
+      </button>
 
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages" mat-button class="error">
-      Next
-    </button>
+      <span>Page {{ currentPage }} / {{ totalPages }}</span>
+
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages" mat-button class="error">
+        Next
+      </button>
+    </div>
   </div>
 </div>
+
