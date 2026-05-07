@@ -29,5 +29,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/categories/pages/category-list/category-list.component')
         .then(m => m.CategoryListComponent)
+  },
+  {
+    path: 'admin/categories/create',
+    loadComponent: () =>
+      import('./features/categories/pages/category-create/category-create.component')
+        .then(m => m.CategoryCreateComponent)
   }
 ];

@@ -1,0 +1,43 @@
+<div class="container">
+  <h1 class="title">Create Category</h1>
+
+  <div class="form-container">
+    <form (ngSubmit)="onSubmit()">
+      <!-- Error Message -->
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <!-- Name Input -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Category Name</mat-label>
+        <input 
+          matInput 
+          [(ngModel)]="name" 
+          name="name"
+          [disabled]="isSubmitting"
+        />
+      </mat-form-field>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button 
+          type="button"
+          mat-stroked-button 
+          (click)="onCancel()"
+          [disabled]="isSubmitting"
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit"
+          mat-raised-button 
+          color="primary"
+          [disabled]="isSubmitting"
+        >
+          {{ isSubmitting ? 'Creating...' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

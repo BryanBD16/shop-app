@@ -62,7 +62,17 @@ export class CategoryListComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error updating category:', err);
-        const errorMessage = err.error?.detail || 'Failed to update category';
+        
+        // Extraire le premier message d'erreur de l'API
+        let errorMessage = 'Failed to update category';
+        if (err.error?.detail) {
+          errorMessage = err.error.detail;
+        } else if (err.error?.errors) {
+          const firstError = Object.values(err.error.errors)[0];
+          if (Array.isArray(firstError) && firstError.length > 0) {
+            errorMessage = firstError[0];
+          }
+        }
         
         if (category) {
           const dialogRef = this.dialog.open(CategoryEditDialogComponent, {
