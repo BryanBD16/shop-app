@@ -9,10 +9,10 @@ export class LoadingService {
   loading$ = this._loading.asObservable();
 
   show() {
-    this._loading.next(true);
+    setTimeout(() => this._loading.next(true), 0);
   }
 
   hide() {
-    this._loading.next(false);
+    setTimeout(() => this._loading.next(false), 0);
   }
 }
