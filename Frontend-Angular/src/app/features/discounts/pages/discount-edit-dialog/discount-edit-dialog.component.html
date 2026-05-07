@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>Edit Discount</h2>
+
+<mat-dialog-content>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Title</mat-label>
+    <input matInput [(ngModel)]="title" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Percentage</mat-label>
+    <input matInput type="number" [(ngModel)]="percentage" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Start Date</mat-label>
+    <input matInput type="datetime-local" [(ngModel)]="startDate" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>End Date</mat-label>
+    <input matInput type="datetime-local" [(ngModel)]="endDate" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Product (optional)</mat-label>
+    <input
+      matInput
+      type="text"
+      [formControl]="productControl"
+      [matAutocomplete]="productAuto"
+      placeholder="Search product"
+    />
+    <mat-autocomplete #productAuto="matAutocomplete" [displayWith]="displayProduct" (optionSelected)="onProductSelected($event.option.value)">
+      <mat-option *ngFor="let p of filteredProducts" [value]="p">
+        {{ p.name }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Category (optional)</mat-label>
+    <mat-select [(ngModel)]="categoryId">
+      <mat-option [value]="null">None</mat-option>
+      <mat-option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()">Save</button>
+</mat-dialog-actions>

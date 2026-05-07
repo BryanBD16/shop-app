@@ -52,7 +52,7 @@
         </mat-card-content>
 
         <mat-card-actions>
-          <button mat-flat-button color="primary">
+          <button mat-flat-button color="primary" (click)="$event.stopPropagation();">
             Add to Cart
           </button>
         </mat-card-actions>

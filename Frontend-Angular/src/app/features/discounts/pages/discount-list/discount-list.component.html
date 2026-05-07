@@ -1,1 +1,46 @@
-<p>discount-list works!</p>
+<div class="container">
+  <h1 class="title">Discounts</h1>
+
+  <div class="table-container">
+    <table mat-table [dataSource]="discounts" class="discount-table">
+
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef>Title</th>
+        <td mat-cell *matCellDef="let d">{{ d.title }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="percentage">
+        <th mat-header-cell *matHeaderCellDef>%</th>
+        <td mat-cell *matCellDef="let d">{{ d.percentage }}%</td>
+      </ng-container>
+
+      <ng-container matColumnDef="startDate">
+        <th mat-header-cell *matHeaderCellDef>Start</th>
+        <td mat-cell *matCellDef="let d">{{ d.startDate | date:'short' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="endDate">
+        <th mat-header-cell *matHeaderCellDef>End</th>
+        <td mat-cell *matCellDef="let d">{{ d.endDate ? (d.endDate | date:'short') : '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="scope">
+        <th mat-header-cell *matHeaderCellDef>Scope</th>
+        <td mat-cell *matCellDef="let d">{{ getScopeLabel(d) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let d">
+          <button mat-icon-button color="primary" (click)="openEditDialog(d)"><mat-icon>edit</mat-icon></button>
+          <button mat-icon-button color="warn" (click)="deleteDiscount(d.id)"><mat-icon>delete</mat-icon></button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+
+  <div *ngIf="discounts.length === 0 && !isLoading" class="text-muted">No discounts found.</div>
+</div>
