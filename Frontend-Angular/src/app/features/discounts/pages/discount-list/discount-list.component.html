@@ -16,12 +16,12 @@
 
       <ng-container matColumnDef="startDate">
         <th mat-header-cell *matHeaderCellDef>Start</th>
-        <td mat-cell *matCellDef="let d">{{ d.startDate | date:'short' }}</td>
+        <td mat-cell *matCellDef="let d">{{ formatDiscountDate(d.startDate) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="endDate">
         <th mat-header-cell *matHeaderCellDef>End</th>
-        <td mat-cell *matCellDef="let d">{{ d.endDate ? (d.endDate | date:'short') : '-' }}</td>
+        <td mat-cell *matCellDef="let d">{{ formatDiscountDate(d.endDate) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="scope">

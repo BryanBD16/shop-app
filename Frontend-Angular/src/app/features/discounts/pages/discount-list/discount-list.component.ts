@@ -11,6 +11,7 @@ import { CategoryService } from '../../../../core/services/category.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { DiscountDto } from '../../../../shared/models/discounts/discount.dto.model';
 import { DiscountEditDialogComponent } from '../discount-edit-dialog/discount-edit-dialog.component';
+import { utcIsoToLocalDateTimeInput } from '../../../../shared/utils/discount-date.utils';
 
 @Component({
   selector: 'app-discount-list',
@@ -163,6 +164,16 @@ export class DiscountListComponent implements OnInit {
     }
 
     return '-';
+  }
+
+  formatDiscountDate(value?: string | null): string {
+    const localDateTime = utcIsoToLocalDateTimeInput(value);
+
+    if (!localDateTime) {
+      return '-';
+    }
+
+    return new Date(localDateTime).toLocaleString();
   }
 }
 

@@ -14,6 +14,7 @@ import { ProductService } from '../../../../core/services/product.service';
 import { AdminDiscountCreateDto } from '../../../../shared/models/discounts/admin-discount-create.dto.model';
 import { CategoryDto } from '../../../../shared/models/categories/category.dto.model';
 import { AdminProductListItemDto } from '../../../../shared/models/products/admin-product-list-item.dto.model';
+import { localDateTimeToUtcIso } from '../../../../shared/utils/discount-date.utils';
 
 @Component({
   selector: 'app-discount-create',
@@ -76,8 +77,8 @@ export class DiscountCreateComponent {
     const dto: AdminDiscountCreateDto = {
       title: this.title.trim(),
       percentage: Number(this.percentage),
-      startDate: this.startDate,
-      endDate: this.endDate || null,
+      startDate: localDateTimeToUtcIso(this.startDate),
+      endDate: this.endDate ? localDateTimeToUtcIso(this.endDate) : null,
       productId: this.productId,
       categoryId: this.categoryId
     };

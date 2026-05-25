@@ -15,6 +15,7 @@ import { ProductService } from '../../../../core/services/product.service';
 import { CategoryDto } from '../../../../shared/models/categories/category.dto.model';
 import { AdminProductListItemDto } from '../../../../shared/models/products/admin-product-list-item.dto.model';
 import { AdminProductDetailsDto } from '../../../../shared/models/products/admin-product-details.dto.model';
+import { localDateTimeToUtcIso, utcIsoToLocalDateTimeInput } from '../../../../shared/utils/discount-date.utils';
 
 @Component({
   selector: 'app-discount-edit-dialog',
@@ -44,8 +45,8 @@ export class DiscountEditDialogComponent {
   ) {
     this.title = data.title;
     this.percentage = data.percentage;
-    this.startDate = this.toDateTimeLocalValue(data.startDate);
-    this.endDate = this.toDateTimeLocalValue(data.endDate);
+    this.startDate = utcIsoToLocalDateTimeInput(data.startDate);
+    this.endDate = utcIsoToLocalDateTimeInput(data.endDate);
     this.productId = data.productId ?? null;
     this.categoryId = data.categoryId ?? null;
     this.error = data.error;
@@ -67,8 +68,8 @@ export class DiscountEditDialogComponent {
     const payload: any = {
       title: this.title,
       percentage: Number(this.percentage),
-      startDate: this.startDate,
-      endDate: this.endDate || null,
+      startDate: localDateTimeToUtcIso(this.startDate),
+      endDate: this.endDate ? localDateTimeToUtcIso(this.endDate) : null,
       productId: this.productId || null,
       categoryId: this.categoryId || null
     };
@@ -152,18 +153,4 @@ export class DiscountEditDialogComponent {
     }
   }
 
-  private toDateTimeLocalValue(value?: string | null): string {
-    if (!value) {
-      return '';
-    }
-
-    const date = new Date(value);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
 }
