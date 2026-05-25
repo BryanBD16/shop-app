@@ -25,6 +25,12 @@ export const routes: Routes = [
         .then(m => m.DiscountListComponent)
   },
   {
+    path: 'admin/discounts/create',
+    loadComponent: () =>
+      import('./features/discounts/pages/discount-create/discount-create.component')
+        .then(m => m.DiscountCreateComponent)
+  },
+  {
     path: 'admin/categories',
     loadComponent: () =>
       import('./features/categories/pages/category-list/category-list.component')
