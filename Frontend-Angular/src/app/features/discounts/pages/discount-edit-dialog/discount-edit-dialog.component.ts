@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -24,7 +24,7 @@ import { localDateTimeToUtcIso, utcIsoToLocalDateTimeInput } from '../../../../s
   templateUrl: './discount-edit-dialog.component.html',
   styleUrl: './discount-edit-dialog.component.scss'
 })
-export class DiscountEditDialogComponent {
+export class DiscountEditDialogComponent implements AfterViewInit {
   title: string = '';
   percentage: number | null = null;
   startDate: string = '';
@@ -36,6 +36,7 @@ export class DiscountEditDialogComponent {
   products: AdminProductListItemDto[] = [];
   filteredProducts: AdminProductListItemDto[] = [];
   productControl = new FormControl<AdminProductListItemDto | string | null>('');
+  @ViewChild('dialogTop') dialogTop?: ElementRef<HTMLDivElement>;
 
   constructor(
     public dialogRef: MatDialogRef<DiscountEditDialogComponent>,
@@ -55,6 +56,12 @@ export class DiscountEditDialogComponent {
 
     if (this.productId != null) {
       this.loadProductById(this.productId);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.error) {
+      this.scrollToTop();
     }
   }
 
@@ -151,6 +158,10 @@ export class DiscountEditDialogComponent {
     if (match) {
       this.productControl.setValue(match, { emitEvent: false });
     }
+  }
+
+  private scrollToTop(): void {
+    this.dialogTop?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
 }

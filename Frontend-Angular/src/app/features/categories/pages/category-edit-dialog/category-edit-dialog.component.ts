@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -18,10 +18,11 @@ export interface CategoryEditDialogData extends CategoryDto {
   templateUrl: './category-edit-dialog.component.html',
   styleUrl: './category-edit-dialog.component.scss'
 })
-export class CategoryEditDialogComponent {
+export class CategoryEditDialogComponent implements AfterViewInit {
 
   name: string = '';
   error: string | undefined;
+  @ViewChild('dialogTop') dialogTop?: ElementRef<HTMLDivElement>;
 
   constructor(
     public dialogRef: MatDialogRef<CategoryEditDialogComponent>,
@@ -31,6 +32,12 @@ export class CategoryEditDialogComponent {
     this.error = data.error;
   }
 
+  ngAfterViewInit(): void {
+    if (this.error) {
+      this.scrollToTop();
+    }
+  }
+
   onCancel(): void {
     this.dialogRef.close();
   }
@@ -38,6 +45,14 @@ export class CategoryEditDialogComponent {
   onSave(): void {
     if (this.name.trim()) {
       this.dialogRef.close({ name: this.name });
+      return;
     }
+
+    this.error = 'Category name is required';
+    this.scrollToTop();
+  }
+
+  private scrollToTop(): void {
+    this.dialogTop?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }

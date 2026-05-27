@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,6 +20,8 @@ export class CategoryCreateComponent {
   private categoryService = inject(CategoryService);
   private router = inject(Router);
 
+  @ViewChild('formTop') formTop?: ElementRef<HTMLDivElement>;
+
   name: string = '';
   error: string | null = null;
   isSubmitting = false;
@@ -29,8 +31,7 @@ export class CategoryCreateComponent {
     this.isSubmitting = true;
 
     if (!this.name.trim()) {
-      this.error = 'Category name is required';
-      this.isSubmitting = false;
+      this.fail('Category name is required');
       return;
     }
 
@@ -43,7 +44,8 @@ export class CategoryCreateComponent {
       },
       error: (err) => {
         this.isSubmitting = false;
-        
+        this.scrollToTop();
+
         // Extraire le premier message d'erreur de l'API
         if (err.error?.detail) {
           this.error = err.error.detail;
@@ -66,5 +68,15 @@ export class CategoryCreateComponent {
 
   onCancel(): void {
     this.router.navigate(['/admin/categories']);
+  }
+
+  private fail(message: string): void {
+    this.error = message;
+    this.isSubmitting = false;
+    this.scrollToTop();
+  }
+
+  private scrollToTop(): void {
+    this.formTop?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }

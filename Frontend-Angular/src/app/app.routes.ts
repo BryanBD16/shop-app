@@ -19,6 +19,18 @@ export const routes: Routes = [
         .then(m => m.ProductDetailsComponent)
   },
   {
+    path: 'admin/products',
+    loadComponent: () =>
+      import('./features/products/pages/product-list/product-list.component')
+        .then(m => m.ProductListComponent)
+  },
+  {
+    path: 'admin/products/create',
+    loadComponent: () =>
+      import('./features/products/pages/product-create/product-create.component')
+        .then(m => m.ProductCreateComponent)
+  },
+  {
     path: 'admin/discounts',
     loadComponent: () =>
       import('./features/discounts/pages/discount-list/discount-list.component')

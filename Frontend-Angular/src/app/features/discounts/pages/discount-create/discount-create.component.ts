@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -30,6 +30,8 @@ export class DiscountCreateComponent {
   private productService = inject(ProductService);
   private router = inject(Router);
 
+  @ViewChild('formTop') formTop?: ElementRef<HTMLDivElement>;
+
   title = '';
   percentage: number | null = null;
   startDate = '';
@@ -57,20 +59,22 @@ export class DiscountCreateComponent {
     this.syncSelectedProduct();
 
     if (!this.title.trim()) {
-      this.error = 'Discount title is required';
-      this.isSubmitting = false;
+      this.fail('Discount title is required');
       return;
     }
 
     if (this.percentage == null || Number.isNaN(Number(this.percentage))) {
-      this.error = 'Discount percentage is required';
-      this.isSubmitting = false;
+      this.fail('Discount percentage is required');
+      return;
+    }
+
+    if (this.percentage < 0 || this.percentage > 100) {
+      this.fail('Discount percentage must be between 0 and 100');
       return;
     }
 
     if (!this.startDate) {
-      this.error = 'Start date is required';
-      this.isSubmitting = false;
+      this.fail('Start date is required');
       return;
     }
 
@@ -92,6 +96,7 @@ export class DiscountCreateComponent {
         this.isSubmitting = false;
         this.error = this.extractErrorMessage(error, 'Failed to create discount');
         console.error('Error creating discount:', error);
+        this.scrollToTop();
       }
     });
   }
@@ -152,6 +157,16 @@ export class DiscountCreateComponent {
     if (match) {
       this.productControl.setValue(match, { emitEvent: false });
     }
+  }
+
+  private fail(message: string): void {
+    this.error = message;
+    this.isSubmitting = false;
+    this.scrollToTop();
+  }
+
+  private scrollToTop(): void {
+    this.formTop?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   private extractErrorMessage(error: any, fallback: string): string {

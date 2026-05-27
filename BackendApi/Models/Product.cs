@@ -14,6 +14,7 @@ public class Product
     public string Name { get; set; } = string.Empty;
 
     [Column(TypeName = "decimal(10,2)")]
+    [Range(0, double.MaxValue)]
     public decimal Price { get; set; }
 
     [MaxLength(255)]
@@ -21,6 +22,7 @@ public class Product
 
     public string Description { get; set; } = string.Empty;
 
+    [Range(0, int.MaxValue)]
     public int StockQuantity { get; set; }
 
     public bool IsPublished { get; set; } = true;
