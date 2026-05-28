@@ -1,0 +1,53 @@
+<!-- ERROR -->
+<div *ngIf="error" class="status text-error">
+  {{ error }}
+</div>
+
+<!-- CONTENT -->
+<div *ngIf="product" class="product-page">
+  <div class="page-header">
+    <h1 class="product-title">{{ product.name }}</h1>
+
+    <div class="actions">
+      <button mat-stroked-button (click)="onBack()">Back</button>
+      <button mat-flat-button color="primary" (click)="openEditDialog()">Edit</button>
+    </div>
+  </div>
+
+  <div class="product-main">
+    <div class="image-section">
+      <img [src]="getImageUrl(product.imagePath)" [alt]="product.name" />
+    </div>
+
+    <div class="info-section">
+      <div class="price-section">
+        <ng-container *ngIf="product.discountedPrice; else normalPrice">
+          <div class="discount-price">
+            {{ product.discountedPrice | currency }}
+          </div>
+          <div class="original-price">
+            {{ product.originalPrice | currency }}
+          </div>
+        </ng-container>
+
+        <ng-template #normalPrice>
+          <div class="normal-price">
+            {{ product.originalPrice | currency }}
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="details-grid">
+        <div><span class="label">Published</span><span>{{ product.isPublished ? 'Published' : 'Unpublished' }}</span></div>
+        <div><span class="label">Stock</span><span>{{ product.stockQuantity }}</span></div>
+        <div><span class="label">Category</span><span>{{ categoryName }}</span></div>
+        <div><span class="label">ID</span><span>#{{ product.id }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="description-section">
+    <h2>Description</h2>
+    <p>{{ product.description || 'No description provided.' }}</p>
+  </section>
+</div>

@@ -148,6 +148,7 @@ public class ProductService : IProductService
                 Id = product.Id,
                 Name = product.Name,
                 OriginalPrice = product.Price,
+                                DiscountedPrice = discounted,
                 ImagePath = product.ImagePath,
                 Description = product.Description,
                 StockQuantity = product.StockQuantity,

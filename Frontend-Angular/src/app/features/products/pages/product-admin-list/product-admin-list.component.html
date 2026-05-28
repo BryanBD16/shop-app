@@ -1,0 +1,62 @@
+<div class="container">
+  <h1 class="title">Products</h1>
+
+  <div class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Search products</mat-label>
+      <input matInput [(ngModel)]="currentSearch" (input)="onSearchChange()" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Category</mat-label>
+      <mat-select [(ngModel)]="currentCategoryId" (selectionChange)="onCategoryChange()">
+        <mat-option value="">All categories</mat-option>
+        <mat-option *ngFor="let category of categories" [value]="category.id">
+          {{ category.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="product-grid" *ngIf="products.length > 0; else emptyState">
+    <mat-card class="product-card clickable" *ngFor="let product of products" (click)="openDetail(product)">
+      <div class="product-image-wrapper">
+        <img [src]="getImageUrl(product.imagePath)" [alt]="product.name" />
+        <div class="status-badge" [class.hidden]="!product.isPublished">
+          {{ isPublishedLabel(product) }}
+        </div>
+      </div>
+
+      <mat-card-content>
+        <h3>{{ product.name }}</h3>
+
+        <div class="price-line">
+          <ng-container *ngIf="product.discountedPrice; else originalPrice">
+            <span class="current-price discounted">{{ product.discountedPrice | currency }}</span>
+            <span class="original-price">{{ product.originalPrice | currency }}</span>
+          </ng-container>
+
+          <ng-template #originalPrice>
+            <span class="current-price">{{ product.originalPrice | currency }}</span>
+          </ng-template>
+        </div>
+
+        <div class="meta-grid">
+          <div><span class="label">Stock</span><span>{{ product.stockQuantity }}</span></div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <ng-template #emptyState>
+    <div *ngIf="!isLoading" class="empty-state text-error">
+      No products match your filters.
+    </div>
+  </ng-template>
+
+  <div class="pagination">
+    <button (click)="prevPage()" [disabled]="currentPage === 1" mat-button class="secondary">Previous</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages" mat-button class="error">Next</button>
+  </div>
+</div>

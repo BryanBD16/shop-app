@@ -1,0 +1,76 @@
+<h2 mat-dialog-title>Edit Product</h2>
+
+<mat-dialog-content>
+  <div #dialogTop></div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Name</mat-label>
+    <input matInput [(ngModel)]="name" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Price</mat-label>
+    <input matInput type="number" min="0" step="0.01" [(ngModel)]="price" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Description</mat-label>
+    <textarea matInput rows="4" [(ngModel)]="description"></textarea>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Stock Quantity</mat-label>
+    <input matInput type="number" min="0" [(ngModel)]="stockQuantity" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Category</mat-label>
+    <mat-select [(ngModel)]="categoryId">
+      <mat-option [value]="null">Select a category</mat-option>
+      <mat-option *ngFor="let category of categories" [value]="category.id">
+        {{ category.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="gallery-section">
+    <div class="section-title">Image Gallery</div>
+
+    <div *ngIf="imageGallery.length > 0; else noImages" class="gallery-grid">
+      <button
+        type="button"
+        class="gallery-item"
+        *ngFor="let image of imageGallery"
+        [class.selected]="isSelectedImage(image)"
+        (click)="selectImage(image)"
+      >
+        <img [src]="imageUrl(image)" [alt]="image" />
+      </button>
+    </div>
+
+    <ng-template #noImages>
+      <div class="empty-state">No images available.</div>
+    </ng-template>
+
+    <div *ngIf="imagePath" class="selected-preview">
+      <div class="preview-label">Selected image</div>
+      <div class="selected-preview-image">
+        <img [src]="imageUrl(imagePath)" [alt]="imagePath" />
+      </div>
+    </div>
+  </div>
+
+  <div class="status-toggle">
+    <mat-slide-toggle [(ngModel)]="isPublished">
+      Published
+    </mat-slide-toggle>
+    <div class="status-hint">Current status: {{ isPublished ? 'Published' : 'Unpublished' }}</div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()">Save</button>
+</mat-dialog-actions>

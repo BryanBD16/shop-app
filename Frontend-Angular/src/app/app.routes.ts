@@ -21,14 +21,20 @@ export const routes: Routes = [
   {
     path: 'admin/products',
     loadComponent: () =>
-      import('./features/products/pages/product-list/product-list.component')
-        .then(m => m.ProductListComponent)
+      import('./features/products/pages/product-admin-list/product-admin-list.component')
+        .then(m => m.ProductAdminListComponent)
   },
   {
     path: 'admin/products/create',
     loadComponent: () =>
       import('./features/products/pages/product-create/product-create.component')
         .then(m => m.ProductCreateComponent)
+  },
+  {
+    path: 'admin/products/:id',
+    loadComponent: () =>
+      import('./features/products/pages/product-admin-detail/product-admin-detail.component')
+        .then(m => m.ProductAdminDetailComponent)
   },
   {
     path: 'admin/discounts',
