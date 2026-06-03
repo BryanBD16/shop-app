@@ -2,7 +2,7 @@
 # Configuration
 # ============================
 
-FRONTEND_DIR=Frontend
+FRONTEND_DIR=Frontend-Angular
 BACKEND_DIR=BackendApi
 
 # ============================
@@ -11,14 +11,12 @@ BACKEND_DIR=BackendApi
 
 .PHONY: sass backend dev db-drop db-start db-stop migrate
 
-
 # ============================
-# Sass compilation (once)
+# Frontend (Angular)
 # ============================
-
-sass:
-	@echo "Compiling SCSS → CSS"
-	cd $(FRONTEND_DIR) && sass scss/style.scss css/style.css
+frontend:
+	@echo "Starting frontend (Angular)"
+	cd $(FRONTEND_DIR) && ng serve
 
 # ============================
 # Backend (.NET)
@@ -34,7 +32,7 @@ backend:
 
 dev: db-start
 	@echo "Starting full development environment"
-	make -j2 sass backend
+	make -j2 frontend backend
 
 # ============================
 # MySQL control
