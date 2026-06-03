@@ -1,12 +1,12 @@
-# Shop App
+# Shop App — Portfolio Project
 
-Student full-stack e-commerce project built for learning and portfolio use.
+This repository contains a full-stack e-commerce demo application created as a portfolio and learning project. It is intended to demonstrate web application concepts, backend API design, and frontend UI work. This project is not production-ready and is provided for demonstration and evaluation purposes only.
 
 ## Project status
 
 In progress.
 
-Core product, category and discount flows are implemented, but the application is not finished yet.
+Core product, category and discount flows are implemented; some features and polishing are still under development.
 
 ## What the project currently does
 
@@ -32,10 +32,8 @@ Core product, category and discount flows are implemented, but the application i
 - MySQL
 
 ### Frontend
-- Vanilla JavaScript (no framework)
-- HTML5
-- SCSS / CSS
-
+- `Frontend-Angular` — Angular (TypeScript) application used for the UI and admin interfaces. Run with `npm install` and `npm start` in the `Frontend-Angular` folder.
+ 
 ### Testing
 - xUnit
 
@@ -62,10 +60,43 @@ Backend layers:
 
 ### Prerequisites
 
-- .NET 8 SDK
-- MySQL
-- Node.js (for Sass compilation)
-- Sass CLI
+Backend prerequisites
+
+- .NET 8 SDK (8.0+). Verify with:
+
+```bash
+dotnet --version
+```
+
+- MySQL server (8.0+). Verify with:
+
+```bash
+mysql --version
+```
+
+- Optional: EF Core CLI (`dotnet-ef`) for applying migrations. If you don't have it installed globally you can install it with:
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+- `make` and `sudo` are used by some Makefile targets (e.g., `db-start`) to control the local MySQL service. These are optional — you can run the equivalent `dotnet` and service commands manually if you prefer.
+
+Angular frontend prerequisites
+
+- Node.js (LTS, recommended >=18) and `npm`. Verify with:
+
+```bash
+node --version
+npm --version
+```
+
+- Global Angular CLI is NOT required. The project uses the local Angular CLI in `Frontend-Angular` devDependencies; run `npm install` then `npm start` from that folder.
+
+- (Optional) If you prefer `yarn`, it will also work after installing dependencies with `yarn` in `Frontend-Angular`.
+
+Note: The legacy `Frontend` folder is archived and not used by the current development workflow.
+
 
 ### 1) Clone and enter project
 
@@ -101,15 +132,27 @@ Or from the project root:
 make backend
 ```
 
-### 5) Compile frontend styles
+### 4b) Run the Angular frontend (optional)
+
+Open a new terminal and run:
 
 ```bash
-make sass
+cd Frontend-Angular
+npm install
+npm start
 ```
 
-### 6) Open frontend pages
+The Angular app will run on the default `ng serve` port (usually `http://localhost:4200`).
 
-Open pages from the Frontend folder in your browser (public and admin pages are separated).
+### 5) (Optional) Build the Angular frontend for production
+
+From the `Frontend-Angular` folder run:
+
+```bash
+npm run build
+```
+
+The production build will be output to `Frontend-Angular/dist` by default and can be served by a static file server or integrated into a hosting pipeline.
 
 ## Testing
 
@@ -125,15 +168,22 @@ Run a specific test group:
 dotnet test BackendApi.Tests/BackendApi.Tests.csproj --filter "CategoryServiceTests"
 ```
 
+For frontend unit tests (Angular):
+
+```bash
+cd Frontend-Angular
+npm test
+```
+
 ## Project structure
 
 ```text
 shop-app/
-├── BackendApi/         # API, services, EF Core context, models, migrations
-├── BackendApi.Tests/   # Unit and integration tests
-├── Frontend/           # Static pages, JS, SCSS/CSS
-├── Makefile            # Dev shortcuts
-└── shop-app.sln        # Solution file
+├── BackendApi/           # API, services, EF Core context, models, migrations
+├── BackendApi.Tests/     # Unit and integration tests
+├── Frontend-Angular/     # Angular (TypeScript) application used for modern UI (primary frontend)
+├── Makefile              # Dev shortcuts
+└── shop-app.sln          # Solution file
 ```
 
 ## Development workflow
